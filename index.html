@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2833">
+<meta name="robots" content="noindex,nofollow">
+<title>龍德路住宅整修工程｜平安住</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3EFE6;--card:#FFFDF8;--ink:#1E2833;--muted:#5E6873;--line:#DDD5C5;
+  --blue:#2D5B86;--accent:#D2532A;--ok:#2E7D4F;--warn:#B7791F;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","PMingLiU","Songti TC",serif;
+  --navh:62px;
+}
+@media (prefers-color-scheme:dark){:root{--paper:#14181D;--card:#1C2229;--ink:#ECE7DC;--muted:#9CA5AF;--line:#323A44;--blue:#86AED6;--accent:#F07D55;--ok:#62BE8A;--warn:#E3AC4E}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 var(--sans);
+  padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 16px)}
+img{max-width:100%;display:block}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+
+/* header */
+header{background:var(--ink);color:#F3EFE6;padding:calc(env(safe-area-inset-top,0px) + 18px) 0 18px}
+header .firm{font-size:13px;opacity:.75}
+header h1{font-family:var(--serif);font-weight:900;font-size:27px;line-height:1.3;margin:4px 0 2px;letter-spacing:.03em}
+header .addr{font-size:14px;opacity:.85}
+
+/* bottom nav */
+nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(5,1fr)}
+nav.bar button{height:var(--navh);background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:12px;cursor:pointer}
+nav.bar svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8}
+nav.bar button[aria-selected="true"]{color:var(--accent);font-weight:700}
+
+section.pg{display:none;padding:20px 0}
+section.pg.on{display:block}
+h2{font-family:var(--serif);font-size:24px;margin:0 0 4px;line-height:1.4}
+h3{font-family:var(--serif);font-size:19px;margin:26px 0 10px}
+.lead{color:var(--muted);font-size:15px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.muted{color:var(--muted)} .small{font-size:14px}
+.note{border-left:4px solid var(--warn);background:var(--card);padding:10px 14px;border-radius:8px;font-size:15px;margin:0 0 14px}
+.note.ok{border-color:var(--ok)}
+
+/* summary numbers */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .k{font-size:13px;color:var(--muted)}
+.kpi .v{font-family:var(--serif);font-weight:900;font-size:19px;line-height:1.4}
+.kpi.wide{grid-column:1/-1}
+
+/* stages */
+.stg{display:grid;grid-template-columns:34px 1fr;gap:0 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.stg:last-child{border-bottom:0}
+.stg .num{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;color:var(--muted)}
+.stg[data-s="施工中"] .num{border-color:var(--accent);color:var(--accent)}
+.stg[data-s="已完成"] .num{background:var(--ok);border-color:var(--ok);color:#fff}
+.stg .t{font-weight:700}
+.stg .s{font-size:13px;margin-left:6px;color:var(--muted)}
+.stg[data-s="施工中"] .s{color:var(--accent);font-weight:700}
+.stg[data-s="已完成"] .s{color:var(--ok);font-weight:700}
+.stg .d{font-size:14px;color:var(--muted);line-height:1.5}
+.chk{display:flex;gap:8px;align-items:center;font-size:15px;margin-top:6px;line-height:1.4}
+.dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);flex:none}
+.dot.pass{background:var(--ok);border-color:var(--ok)}
+
+/* pay list */
+.payi{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.payi:last-child{border-bottom:0}
+.payi .c{font-size:14px;color:var(--muted);line-height:1.5}
+.payi .a{text-align:right;white-space:nowrap;font-weight:700}
+.pill{display:inline-block;font-size:12px;padding:0 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-weight:500;margin-top:4px}
+.pill.go{border-color:var(--accent);color:var(--accent)} .pill.done{border-color:var(--ok);color:var(--ok)}
+
+/* contract */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.doc{font-family:var(--serif);font-size:17px;line-height:1.95}
+.doc p{margin:0 0 .7em}
+.doc ul{padding-left:1.2em;margin:0 0 .7em} .doc li p{margin:0}
+.doc blockquote{margin:0 0 .7em;padding:0}
+.preamble{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.preamble .ttl{font-weight:900;font-size:21px;text-align:center;letter-spacing:.08em;margin-bottom:12px}
+details.art{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+details.art summary{list-style:none;cursor:pointer;padding:14px 44px 14px 16px;font-weight:600;position:relative;line-height:1.5}
+details.art summary::-webkit-details-marker{display:none}
+details.art summary::after{content:"";position:absolute;right:18px;top:50%;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+details.art[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+details.art .body{padding:0 16px 14px}
+.fill{color:var(--blue);font-weight:700;border-bottom:1.5px solid var(--blue);padding:0 2px}
+.fill.empty{color:var(--muted);font-weight:400}
+
+.doc p.lb{display:grid;grid-template-columns:auto 1fr;margin:0}
+.doc p.lb .k{font-weight:700;white-space:nowrap}
+.doc li{margin-bottom:.35em}
+.doc p.amt{display:flex;align-items:baseline;gap:6px;margin:0 0 .35em}
+.doc p.amt .ld{flex:1;border-bottom:1.5px dotted var(--line);transform:translateY(-.35em);min-width:12px}
+.doc p.amt strong{white-space:nowrap}
+@media (max-width:480px){.doc p.lb.long{display:block}.doc p.lb.long .k{display:block}.doc p.lb.long .k+span{display:block;padding-left:1em}}
+.doc p.amt .v{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+.doc blockquote:has(p.amt){background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.doc th{white-space:nowrap;color:var(--muted);font-weight:500;font-size:14px}
+.doc th strong{font-weight:500}
+.doc td.num,.doc th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.doc tr.grp td{background:color-mix(in srgb,var(--blue) 13%,var(--card));color:var(--blue);font-weight:700}
+.doc tr.grp td:last-child,.doc tr.tot td:last-child{text-align:right}
+.doc tr.tot td{font-weight:700}
+.doc tr.tot td:first-child{text-align:right}
+/* tables → mobile cards */
+.doc table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:15px;line-height:1.5;margin:6px 0 12px}
+.doc th,.doc td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+.doc colgroup{display:none}
+@media (max-width:700px){
+  .doc table,.doc tbody,.doc tr,.doc td{display:block;width:100%}
+  .doc thead{display:none}
+  .doc tr{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;background:var(--paper)}
+  .doc td{border:0;padding:2px 0;display:flex;gap:10px;justify-content:space-between}
+  .doc td::before{content:attr(data-label);color:var(--muted);font-size:13px;flex:none;min-width:4.5em}
+  .doc td:empty,.doc td.blank{display:none}
+  .doc tr.grp{background:color-mix(in srgb,var(--blue) 13%,var(--card));border-color:transparent}
+  .doc tr.grp td::before{display:none}
+  .doc tr.grp td{font-weight:700;background:transparent}
+  .doc td.num{white-space:normal}
+  .doc tr.tot td::before{display:none}
+  .doc tr.tot{background:transparent;border-style:dashed}
+  .doc table.qt tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px;padding:10px 12px}
+  .doc table.qt td{display:inline;width:auto;padding:0}
+  .doc table.qt td::before{display:none}
+  .doc table.qt tr:not(.grp):not(.tot) td:nth-child(1){display:none}
+  .doc table.qt tr:not(.grp):not(.tot) td:nth-child(2){flex:0 0 100%;font-weight:500;margin-bottom:2px}
+  .doc table.qt tr:not(.grp):not(.tot) td:nth-child(3),.doc table.qt tr:not(.grp):not(.tot) td:nth-child(4),.doc table.qt tr:not(.grp):not(.tot) td:nth-child(5){color:var(--muted);font-size:14px}
+  .doc table.qt tr:not(.grp):not(.tot) td:nth-child(5)::before{display:inline;content:"× ";min-width:0;font-size:14px}
+  .doc table.qt tr:not(.grp):not(.tot) td:nth-child(6){margin-left:auto;font-weight:700}
+  .doc table.qt tr.grp td:last-child,.doc table.qt tr.tot td:last-child{margin-left:auto}
+}
+
+/* sign */
+form.f{display:grid;gap:12px}
+.f label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+.f input,.f select,.f textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-size:17px}
+.f textarea{min-height:110px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:700;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{min-height:38px;padding:6px 12px;font-size:14px;font-weight:500}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45}
+.link{background:none;border:0;color:var(--accent);padding:6px 0;font-size:14px;text-decoration:underline;cursor:pointer}
+
+.docc h4{font-family:var(--serif);font-size:18px;margin:4px 0 10px;line-height:1.5}
+.docc .dh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.docc .dt{font-size:12px;border:1px solid var(--blue);color:var(--blue);border-radius:99px;padding:0 8px}
+.docc .dt.main{background:var(--ok);border-color:var(--ok);color:#fff}
+/* plans & photos */
+.plan{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:12px;color:inherit;text-decoration:none}
+.plan .cap{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:6px 4px 2px}
+.plan b{font-family:var(--serif);font-size:19px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ph{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ph a{display:block}
+.ph img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--line)}
+.ph .t{padding:6px 8px;font-size:13px;line-height:1.4}
+.ph .x{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;border:0;border-radius:6px;font-size:13px;padding:4px 8px}
+.floorhd{font-family:var(--serif);font-weight:700;margin:18px 0 8px}
+.empty{padding:26px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;font-size:15px}
+
+/* timeline */
+.ev{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.ev .d{font-size:13px;color:var(--muted)}
+.ev .tag{display:inline-block;font-size:12px;border:1px solid var(--blue);color:var(--blue);border-radius:99px;padding:0 8px;margin-left:6px}
+.ev h4{margin:4px 0;font-family:var(--serif);font-size:18px;line-height:1.5}
+.ev p{margin:0 0 10px;white-space:pre-wrap;font-size:16px}
+
+/* admin */
+.adm{display:none !important} body.admin .adm{display:block !important} body.admin form.adm{display:grid !important} body.admin button.adm{display:inline-block !important}
+.admtag{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;z-index:31;background:var(--accent);color:#fff;font-size:12px;border-radius:99px;padding:2px 10px;display:none}
+body.admin .admtag{display:block}
+.stedit{padding:10px 0;border-bottom:1px solid var(--line)}
+.stedit .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.stedit select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--paper)}
+
+.spin{position:fixed;inset:0;z-index:60;background:rgba(20,24,29,.45);display:none;align-items:center;justify-content:center}
+.spin.on{display:flex}
+.spin div{background:var(--card);padding:16px 22px;border-radius:12px;font-size:15px}
+footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
+
+@media print{
+  nav.bar,.toolbar,.adm,.no-print,header,footer,.admtag{display:none !important}
+  body{padding:0;background:#fff}
+  section.pg{display:none !important} #pg-contract{display:block !important}
+  details.art{border:0} details.art summary::after{display:none}
+  .doc table,.doc tbody,.doc tr,.doc td{display:revert} .doc thead{display:table-header-group} .doc td::before{display:none}
+}
+</style>
+</head>
+<body>
+<div class="admtag">平安住管理模式</div>
+<header>
+  <div class="wrap">
+    <div class="firm">平安住股份有限公司・工程專案頁</div>
+    <h1>龍德路住宅整修工程</h1>
+    <div class="addr">高雄市鼓山區龍德路106巷16-1號・1F～6F</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="sysNote" class="note" style="display:none;margin-top:14px"></div>
+
+  <!-- 總覽 -->
+  <section class="pg on" id="pg-home">
+    <div class="kpis">
+      <div class="kpi"><div class="k">合約狀態</div><div class="v" id="kSign">讀取中</div></div>
+      <div class="kpi"><div class="k">目前進度</div><div class="v" id="kStage">讀取中</div></div>
+      <div class="kpi wide"><div class="k">合約總價（含5%營業稅）</div><div class="v">NT$5,798,100</div></div>
+    </div>
+    <h3 style="margin-top:18px">施工階段與驗收點</h3>
+    <div class="card" id="stages"></div>
+    <h3>付款期程</h3>
+    <div class="card" id="pays"></div>
+    <h3>最新施工紀錄</h3>
+    <div id="latest"></div>
+  </section>
+
+  <!-- 合約 -->
+  <section class="pg" id="pg-contract">
+    <h2>合約文件</h2>
+    <p class="lead">合約以紙本簽署，掃描檔上傳於此備查；日後的追加合約（木作、燈具等）也會陸續放在這裡。</p>
+    <div class="card adm">
+      <b>上傳合約文件</b>
+      <form class="f" id="docForm" style="margin-top:8px">
+        <label>類型<select name="type"><option>主合約（簽署版）</option><option>追加合約</option><option>變更簽認</option><option>其他文件</option></select></label>
+        <label>名稱<input name="title" required placeholder="例：木作工程追加合約"></label>
+        <label>簽訂日期<input type="date" name="date"></label>
+        <label>檔案（照片或 PDF，可多選，依頁序選取）<input type="file" name="files" accept="image/*,application/pdf" multiple required></label>
+        <button class="btn acc" type="submit">上傳文件</button>
+      </form>
+    </div>
+    <div id="docList"></div>
+
+    <h3 id="fulltext">主合約條文</h3>
+    <p class="lead">共十八條，點條文標題展開閱讀。</p>
+    <div class="toolbar">
+      <button class="btn ghost sm" id="openAll">全部展開</button>
+      <button class="btn ghost sm" id="closeAll">全部收合</button>
+      <button class="btn ghost sm" onclick="window.print()">列印／存 PDF</button>
+    </div>
+
+    <div class="card adm">
+      <b>合約空白欄位</b>
+      <form class="f" id="fieldsForm" style="margin-top:8px">
+        <label>預定開工日<input type="date" name="startDate"></label>
+        <label>預定完工日<input type="date" name="endDate"></label>
+        <label>審閱天數<input name="reviewDays" inputmode="numeric"></label>
+        <button class="btn" type="submit">儲存欄位</button>
+      </form>
+    </div>
+
+    <div class="doc" id="doc">
+      <div class="preamble"><div class="ttl">龍德路住宅整修工程承攬合約書</div>
+<p>立合約書人：業主 <span class="fill empty" data-f="name">＿＿＿＿＿＿</span>（以下簡稱甲方）</p>
+<p>承攬人：平安住股份有限公司（統一編號：90052437，以下簡稱乙方）。</p>
+<p>茲因甲方委託乙方承攬龍德路住宅整修工程，雙方同意訂立本合約，條款如下：</p>
+<blockquote>
+<p><strong>工程名稱：</strong>龍德路1F至6F住宅整修工程</p>
+<p><strong>工程地點：</strong>高雄市鼓山區龍德路106巷16-1號</p>
+</blockquote>
+</div><details class="art"><summary>第一條　工程依據及施工範圍</summary><div class="body">
+<p>本工程施工範圍，以龍德路1F至6F規劃圖、第三條工程報價明細表、施工項目、現場實際狀況及後續書面確認內容為準。圖面如與現場尺寸、既有結構或管線狀況不符，應以現場實際條件及雙方確認之施工方式辦理。</p>
+<p>本工程目前約定之主要施工內容如下：</p>
+<ul>
+<li><p class="lb"><span class="k">拆除清運：</span><span>室內既有裝潢、廁所等拆除，以及拆除後廢棄物之集中及合法清運。</span></p></li>
+<li><p class="lb"><span class="k">土水工程：</span><span>廁所基礎、防水、貼磚、封窗、地板抹平及因打鑿施工所需之局部回復。</span></p></li>
+<li><p class="lb"><span class="k">水電工程：</span><span>全戶電線重配、全戶冷熱水管重配、浴室配置、衛浴設備安裝（費用不含設備）、化糞池配置及盤箱更新。</span></p></li>
+<li><p class="lb"><span class="k">批土工程：</span><span>全戶牆面批土整平，不含一樓，亦不含面漆施工。</span></p></li>
+<li><p class="lb"><span class="k">鐵件工程：</span><span>屋頂鐵皮換新（四合一隔熱板）、頂樓露臺兩側格柵板封閉、一樓鐵皮換新（四合一隔熱板）及一樓牆面格柵板封閉。</span></p></li>
+<li><p class="lb"><span class="k">窗戶工程：</span><span>依第三條明細表所列數量，就2F至5F主臥氣密窗、2F至6F側窗及6F落地窗進行換新。</span></p></li>
+<li><p class="lb long"><span class="k">外牆輕拉皮防水工程：</span><span>外牆防水改色（4+1道塗層）及冷氣窗臺打除；外牆如需打除另計。</span></p></li>
+<li><p>6F配合新增洗衣機用出水及排水孔，實際位置依圖面及現場條件施作，費用已含於水電工程價款內。</p></li>
+</ul>
+</div></details><details class="art"><summary>第二條　工程價款</summary><div class="body">
+<p>本工程目前約定之工程總價為新臺幣伍佰伍拾貳萬貳仟元整（NT$5,522,000，未稅），另加計5%營業稅新臺幣貳拾柒萬陸仟壹佰元整（NT$276,100），含稅總價為新臺幣伍佰柒拾玖萬捌仟壹佰元整（NT$5,798,100）。乙方應依法開立統一發票。各項工程金額（未稅）如下：</p>
+<blockquote>
+<p class="amt"><strong>一、拆除清運：</strong><span class="ld"></span><span class="v">NT$540,000。</span></p>
+<p class="amt"><strong>二、土水工程：</strong><span class="ld"></span><span class="v">NT$2,400,000。</span></p>
+<p class="amt"><strong>三、水電工程：</strong><span class="ld"></span><span class="v">NT$1,152,000。</span></p>
+<p class="amt"><strong>四、批土工程：</strong><span class="ld"></span><span class="v">NT$144,000。</span></p>
+<p class="amt"><strong>五、鐵件工程：</strong><span class="ld"></span><span class="v">NT$231,000。</span></p>
+<p class="amt"><strong>六、窗戶換新：</strong><span class="ld"></span><span class="v">NT$407,000。</span></p>
+<p class="amt"><strong>七、外牆防水工程：</strong><span class="ld"></span><span class="v">NT$648,000。</span></p>
+</blockquote>
+<p>前項總價中，廢棄物清運暫估新臺幣參拾萬元整（NT$300,000），實際費用依合法清運聯單或相關清運憑證辦理，於尾款時多退少補。</p>
+<p>清運費用預估將超過新臺幣參拾萬元時，乙方應先暫停清運，並以書面或通訊方式向甲方回報已支出金額及預估尚需清運之數量與費用，經甲方確認追加預算後再繼續載運。暫停清運期間如影響後續工序，工期依實際受影響日數順延。</p>
+<p>本工程以實作數量計價之項目，完工後如實際數量與第三條明細表所載數量有差異，依第三條明細表單價按實際數量結算。</p>
+</div></details><details class="art"><summary>第三條　工程報價明細</summary><div class="body">
+<p>本工程各項目之數量、單價及金額，依雙方確認之報價單整理如下表：</p>
+<table>
+
+<thead>
+<tr>
+<th><strong>項次</strong></th>
+<th><strong>工程項目及說明</strong></th>
+<th><strong>數量</strong></th>
+<th><strong>單位</strong></th>
+<th><strong>單價</strong></th>
+<th><strong>金額</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>一</strong></td>
+<td colspan="4"><strong>拆除清運</strong></td>
+<td><strong>540,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>室內打除（裝潢及廁所打除）</td>
+<td>96</td>
+<td>坪</td>
+<td>2,500</td>
+<td>240,000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>廢棄物清運（按照清運聯單收費，多退少補）</td>
+<td>1</td>
+<td>式</td>
+<td>300,000</td>
+<td>300,000</td>
+</tr>
+<tr>
+<td><strong>二</strong></td>
+<td colspan="4"><strong>土水工程</strong></td>
+<td><strong>2,400,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>廁所基礎（防水貼磚）、封窗、地板抹平、打鑿部分回復</td>
+<td>96</td>
+<td>坪</td>
+<td>25,000</td>
+<td>2,400,000</td>
+</tr>
+<tr>
+<td><strong>三</strong></td>
+<td colspan="4"><strong>水電工程</strong></td>
+<td><strong>1,152,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>全戶電線重配、全戶冷熱水管重配、浴室配置、化糞池配置、盤箱更新（衛浴設備另計）</td>
+<td>96</td>
+<td>坪</td>
+<td>12,000</td>
+<td>1,152,000</td>
+</tr>
+<tr>
+<td><strong>四</strong></td>
+<td colspan="4"><strong>批土工程</strong></td>
+<td><strong>144,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>全戶牆面批土整平（不含一樓、不含上漆）</td>
+<td>96</td>
+<td>坪</td>
+<td>1,500</td>
+<td>144,000</td>
+</tr>
+<tr>
+<td><strong>五</strong></td>
+<td colspan="4"><strong>鐵件工程</strong></td>
+<td><strong>231,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>屋頂鐵皮換新（四合一隔熱）</td>
+<td>16</td>
+<td>坪</td>
+<td>6,500</td>
+<td>104,000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>頂樓現有露臺兩側牆面封閉（格柵板）</td>
+<td>12</td>
+<td>坪</td>
+<td>4,500</td>
+<td>54,000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>一樓鐵皮換新（四合一隔熱）</td>
+<td>5</td>
+<td>坪</td>
+<td>6,500</td>
+<td>32,500</td>
+</tr>
+<tr>
+<td>4</td>
+<td>一樓牆面封閉（格柵板）</td>
+<td>9</td>
+<td>坪</td>
+<td>4,500</td>
+<td>40,500</td>
+</tr>
+<tr>
+<td><strong>六</strong></td>
+<td colspan="4"><strong>窗戶換新</strong></td>
+<td><strong>407,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>二樓主臥氣密窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>45,000</td>
+<td>45,000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>二樓側窗更換</td>
+<td>2</td>
+<td>樘</td>
+<td>18,000</td>
+<td>36,000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>三樓主臥氣密窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>45,000</td>
+<td>45,000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>三樓側窗更換</td>
+<td>2</td>
+<td>樘</td>
+<td>18,000</td>
+<td>36,000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>四樓主臥氣密窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>45,000</td>
+<td>45,000</td>
+</tr>
+<tr>
+<td>6</td>
+<td>四樓側窗更換</td>
+<td>2</td>
+<td>樘</td>
+<td>18,000</td>
+<td>36,000</td>
+</tr>
+<tr>
+<td>7</td>
+<td>五樓主臥氣密窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>45,000</td>
+<td>45,000</td>
+</tr>
+<tr>
+<td>8</td>
+<td>五樓側窗更換</td>
+<td>2</td>
+<td>樘</td>
+<td>18,000</td>
+<td>36,000</td>
+</tr>
+<tr>
+<td>9</td>
+<td>六樓落地窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>65,000</td>
+<td>65,000</td>
+</tr>
+<tr>
+<td>10</td>
+<td>六樓側窗更換</td>
+<td>1</td>
+<td>樘</td>
+<td>18,000</td>
+<td>18,000</td>
+</tr>
+<tr>
+<td><strong>七</strong></td>
+<td colspan="4"><strong>外牆防水工程</strong></td>
+<td><strong>648,000</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>外牆防水改色（4+1道塗層）（若需打除另計）</td>
+<td>120</td>
+<td>坪</td>
+<td>5,000</td>
+<td>600,000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>冷氣窗臺打除</td>
+<td>4</td>
+<td>處</td>
+<td>12,000</td>
+<td>48,000</td>
+</tr>
+<tr>
+<td colspan="5"><strong>工程總價（未稅）</strong></td>
+<td><strong>NT$5,522,000</strong></td>
+</tr>
+<tr>
+<td colspan="5"><strong>營業稅 5%</strong></td>
+<td><strong>NT$276,100</strong></td>
+</tr>
+<tr>
+<td colspan="5"><strong>含稅總價</strong></td>
+<td><strong>NT$5,798,100</strong></td>
+</tr>
+</tbody>
+</table>
+<p>窗戶之品牌、型號、玻璃規格及顏色，由乙方提出型錄或樣品，經甲方書面確認後訂製。衛浴設備及室內面漆不包含於上表價款。</p>
+</div></details><details class="art"><summary>第四條　工程階段及驗收點</summary><div class="body">
+<p>本工程原則上依下列四個階段進行施工。各階段得依現場條件、材料交期、工種銜接及施工安全需要調整先後或交錯施作，但不得影響整體工程品質及後續工序。各階段主要施工內容如下表：</p>
+<table>
+
+<thead>
+<tr>
+<th><strong>階段</strong></th>
+<th><strong>主要施工內容</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一階段</td>
+<td>室內裝潢及廁所打除、冷氣窗臺打除、廢棄物清運；窗戶丈量及訂製；臨時水電及基本施工電力設置；外牆防水改色（4+1道塗層）。</td>
+</tr>
+<tr>
+<td>第二階段</td>
+<td>水電管線重配、電箱（盤箱）更新、冷熱水管及電管配置、化糞池配置；屋頂及一樓鐵皮換新、格柵板封閉；外牆防水改色（4+1道塗層）。</td>
+</tr>
+<tr>
+<td>第三階段</td>
+<td>廁所基礎、防水、貼磚、封窗、地板抹平、打鑿部位回復；訂製窗戶安裝；水電基礎設施收尾及廁所完工；外牆防水改色（4+1道塗層）。</td>
+</tr>
+<tr>
+<td>第四階段</td>
+<td>室內牆面批土整平；外牆防水改色（4+1道塗層）；整體清潔、缺失修整及總驗收。</td>
+</tr>
+</tbody>
+</table>
+<p>各階段應於下列驗收點辦理查驗，由乙方通知甲方會同，並以照片、測試紀錄或查驗表留存。標示為「隱蔽前查驗」者，未經查驗不得進行後續封閉或覆蓋作業：</p>
+<table>
+
+<thead>
+<tr>
+<th><strong>階段</strong></th>
+<th><strong>驗收點</strong></th>
+<th><strong>查驗內容</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一階段</td>
+<td>拆除完成查驗</td>
+<td>拆除範圍是否符合圖面；廢棄物清運完成及清運聯單；拆除後結構、牆體、既有管線現況拍照記錄；窗戶丈量尺寸及樣式經甲方簽認。</td>
+</tr>
+<tr>
+<td>第二階段</td>
+<td>水電隱蔽前查驗</td>
+<td>給水管（冷熱水）保壓試驗無降壓；排水管通水試驗無滲漏；電線絕緣測試及迴路標示；盤箱配置；管線路徑拍照記錄後始得封管、粉刷。</td>
+</tr>
+<tr>
+<td>第二階段</td>
+<td>鐵件完成查驗</td>
+<td>屋頂及一樓鐵皮固定、搭接及收邊；淋水或雨後檢查無滲漏；格柵板固定牢固。</td>
+</tr>
+<tr>
+<td>第三階段</td>
+<td>防水層隱蔽前查驗</td>
+<td>廁所防水層完成後蓄水試驗48小時無滲漏，始得貼磚。</td>
+</tr>
+<tr>
+<td>第三階段</td>
+<td>廁所及窗戶完成查驗</td>
+<td>貼磚平整、無空心；地面排水坡度及洩水順暢；窗戶安裝垂直、開關順暢，窗框周邊淋水試驗無滲漏。</td>
+</tr>
+<tr>
+<td>第四階段</td>
+<td>外牆防水查驗</td>
+<td>外牆底材處理及各道塗層施工照片記錄（4+1道）；塗層均勻無漏塗；完成後淋水檢查。</td>
+</tr>
+<tr>
+<td>第四階段</td>
+<td>總驗收</td>
+<td>批土平整度；全部工項依第三條明細表逐項清點；水電通電通水測試；缺失清單及修繕完成確認。</td>
+</tr>
+</tbody>
+</table>
+<p>甲方於接獲查驗通知後3日內未辦理查驗且未提出具體異議者，視為該驗收點查驗合格，乙方得繼續施作。臨時水電之設置費用已含於本工程總價；施工期間之水費、電費由甲方負擔。</p>
+</div></details><details class="art"><summary>第五條　圖面及現場條件</summary><div class="body">
+<p>本工程圖面為施工範圍與配置之依據。施工前如發現尺寸、牆體、門窗、排水、電力、給排水、結構、既有設備或其他現況與圖面不符，應先通知對方確認後再施作。因現場既有條件所生之必要變更，若涉及追加減價款或工期調整，應另行確認。</p>
+<p>既有結構、暗管、埋設物、牆內管線或拆除後始能發現之隱蔽狀況，非施工前可合理確認者，不視為原工程範圍當然包含之項目。</p>
+</div></details><details class="art"><summary>第六條　追加、減作及變更</summary><div class="body">
+<p>施工期間如有新增、取消、變更施工內容、材料、尺寸、數量、施工位置或工法等情形，應由雙方確認後辦理。涉及價款變動者，以追加減報價、估價單、通訊紀錄、簽認單或其他可證明雙方意思一致之方式為依據。</p>
+<p>未經確認之新增工程，乙方無義務先行施作；已確認之追加工程，其價款及工期得依實際施工內容調整，追加工程款於該追加項目完成時與當期工程款一併請領。</p>
+</div></details><details class="art"><summary>第七條　不包含項目</summary><div class="body">
+<p>除另有書面約定外，下列項目不包含於本工程總價內：</p>
+<ul>
+<li><p>木作櫃體、廚具、衣櫃、鞋櫃、餐邊櫃及電器櫃。</p></li>
+<li><p>TV牆、沙發背牆、床頭造型、格柵造型、木紋護牆板及其他裝飾性造型工程。</p></li>
+<li><p>特殊漆、室內面漆、金屬飾條、石材及大理石。</p></li>
+<li><p>燈具、燈條及裝飾性照明設備。</p></li>
+<li><p>馬桶、面盆、浴缸、龍頭、淋浴設備及其他衛浴設備。</p></li>
+<li><p>冷氣主機、室內機及其他空調設備。</p></li>
+<li><p>家具、家電及活動式設備。</p></li>
+<li><p>玻璃採光罩之全新製作或大幅修改；如僅有既有部位配合施工，依實際現場確認內容辦理。</p></li>
+<li><p>建築執照、室內裝修許可、使用執照變更或其他行政申請之規費及代辦費用。</p></li>
+<li><p>未列於本合約、報價項目或後續書面追加確認之其他工程。</p></li>
+</ul>
+</div></details><details class="art"><summary>第八條　材料及施工</summary><div class="body">
+<p>施工材料之品牌、型號、規格、顏色及樣式，如於報價、圖面或施工前另有指定者，依指定內容施作；如未指定，則由乙方依同等級且適合現場用途之材料提出後供雙方確認。</p>
+<p>乙方應依一般工程慣例及各工項合理施工程序施作，並維持施工區域基本安全及整潔。</p>
+</div></details><details class="art"><summary>第九條　工程期限及工期調整</summary><div class="body">
+<p>本工程預定於<span class="fill empty" data-f="startDate">＿＿年＿＿月＿＿日</span>開工，總工期約十二個月（以365日曆天計），預定於<span class="fill empty" data-f="endDate">＿＿年＿＿月＿＿日</span>完工；各階段施工順序依第四條辦理。</p>
+<p>施工期間如遇大雨、颱風、地震等天災或其他不可抗力事由，致無法施工或影響施工品質者，工期依實際受影響日數順延。因材料交期、停水停電、現場無法施工、第三人因素、政府機關要求、追加變更工程、甲方遲延付款或其他非可歸責於乙方之原因造成延誤者，亦同。外牆防水等戶外工項須於天候乾燥時施作，雨天及雨後基面未乾期間不計入工期。</p>
+<p>因可歸責於乙方之事由逾期完工者，每逾一日按工程總價千分之一計算逾期違約金，違約金總額以工程總價百分之十為上限。</p>
+</div></details><details class="art"><summary>第十條　工程款支付</summary><div class="body">
+<p>工程款依下列期程支付（金額均含5%營業稅），乙方於各期驗收點查驗合格後請款並開立統一發票，甲方應於接獲請款通知後7日內以匯款方式支付：</p>
+<table>
+
+<thead>
+<tr>
+<th><strong>期別</strong></th>
+<th><strong>付款條件</strong></th>
+<th><strong>比例</strong></th>
+<th><strong>金額（含稅）</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一期</td>
+<td>簽約時支付</td>
+<td>20%</td>
+<td>NT$1,159,620</td>
+</tr>
+<tr>
+<td>第二期</td>
+<td>第一階段「拆除完成查驗」合格</td>
+<td>20%</td>
+<td>NT$1,159,620</td>
+</tr>
+<tr>
+<td>第三期</td>
+<td>第二階段「水電隱蔽前查驗」及「鐵件完成查驗」合格</td>
+<td>20%</td>
+<td>NT$1,159,620</td>
+</tr>
+<tr>
+<td>第四期</td>
+<td>第三階段「廁所及窗戶完成查驗」合格</td>
+<td>20%</td>
+<td>NT$1,159,620</td>
+</tr>
+<tr>
+<td>第五期（尾款）</td>
+<td>第四階段「總驗收」完成，並結算清運費及追加減帳</td>
+<td>20%</td>
+<td>NT$1,159,620</td>
+</tr>
+<tr>
+<td colspan="3"><strong>合計</strong></td>
+<td><strong>NT$5,798,100</strong></td>
+</tr>
+</tbody>
+</table>
+<p>匯款帳戶：陽信商業銀行屏東分行（銀行代碼108），戶名：平安住股份有限公司，帳號：05745-000082-1。追加減工程款及清運費結算差額，另依實際金額加計營業稅。</p>
+<p>甲方逾期未付款經乙方催告後7日內仍未給付者，乙方得暫停施工至付款完成為止，工期並依停工日數順延；因此所生之額外費用由甲方負擔。</p>
+</div></details><details class="art"><summary>第十一條　驗收及修繕</summary><div class="body">
+<p>各驗收點依第四條辦理查驗；全部工程完成後，乙方應通知甲方驗收，甲方應於接獲通知後7日內會同驗收。甲方逾期未驗收、或未經驗收即先行使用者，視為驗收完成。</p>
+<p>驗收如有可歸責於乙方之施工缺失，甲方應以書面列明缺失項目，乙方應於14日內完成修繕；缺失不影響使用者，甲方不得以此拒絕全部驗收或拒付該期以外之款項。</p>
+<p>因原有建物結構、既有漏水源、既有管線老化、原有設備故障、第三人施工、使用不當或非本次施作範圍所造成之問題，不屬本工程施工缺失。</p>
+</div></details><details class="art"><summary>第十二條　保固</summary><div class="body">
+<p>本工程自驗收完成日起，外牆防水工程保固五年，其餘工項保固一年；設備類依原廠保固期間計算。保固期間內因施工不良所致之瑕疵，乙方應負責免費修復，並於驗收完成時出具保固書。</p>
+<p>因天災、地震、人為破壞、使用不當、甲方或第三人自行改裝、建物結構變動或第十一條所列非本工程施工缺失之原因所致之損壞，不在保固範圍內。</p>
+</div></details><details class="art"><summary>第十三條　施工安全及保險</summary><div class="body">
+<p>本工程由乙方向富邦產物保險股份有限公司投保雇主意外責任險及營造綜合保險（營造險），保險期間涵蓋全部工期；乙方並應為施工人員辦理勞工保險，依職業安全衛生相關法令執行必要之安全防護。施工期間因乙方施工所致之工安意外及對第三人之損害，由乙方負責。上開保險於本合約正式簽訂後由乙方辦理投保，乙方應於投保完成後提供保險單影本予甲方，補附為本合約附件二。</p>
+<p>乙方應將施工廢棄物交由合法清運業者處理，並提供清運聯單或相關憑證。</p>
+</div></details><details class="art"><summary>第十四條　法令、許可及停工處理</summary><div class="body">
+<p>甲方應擔保本工程標的為其所有或有權處分，並已取得其他共有人或相關權利人之同意。屋頂鐵皮、露臺及一樓格柵封閉、封窗、化糞池配置、外牆改色等工項如涉及建築法令、室內裝修審查或其他行政許可，由甲方負責確認及申請，乙方配合提供施工資料；因建物合法性或行政機關查報、拆除所生之費用及責任，非可歸責於乙方者，由甲方自行負擔。</p>
+<p>施工期間如因主管機關查報、勒令停工或第三人檢舉，致本工程全部或部分無法施作者，依下列方式處理：</p>
+<blockquote>
+<p>（一）乙方應於接獲通知後即時通知甲方，並得就受影響範圍先行停工，改為施作其他不受影響之工項；停工期間工期依實際停工日數順延，且不適用第九條逾期違約金之規定。</p>
+<p>（二）甲方應自停工之日起30日內，自行向主管機關辦理陳情、改善、申請或補正，並以書面通知乙方是否得以復工。</p>
+<p>（三）停工期間因此所生之機具租金、人員待工、材料保管、現場安全維護，以及撤場與復工重新進場等必要費用，由甲方負擔，乙方得檢附費用明細請款，甲方應於接獲請款通知後7日內給付。</p>
+<p>（四）停工逾30日者，乙方得就停工時已完成之工程數量及已訂製或已進場之材料費用，先行請領該部分工程款，不受第十條付款期程之限制。</p>
+<p>（五）停工累計逾60日仍未能復工，或主管機關命令不得施作、應予拆除者，乙方得以書面終止合約，或就受影響之工項辦理減作。雙方依實際已完成之工程數量、已訂製或已進場之材料費用及前款必要費用辦理結算，甲方應於結算後14日內付清；已收款項超過結算金額者，乙方應無息退還差額。</p>
+<p>（六）已施作完成之工項如經主管機關命令拆除，其拆除、清運及回復原狀之費用由甲方負擔，且不影響乙方就該部分已完成工程之工程款請求；遭拆除部分，乙方不負保固責任。</p>
+</blockquote>
+</div></details><details class="art"><summary>第十五條　現場配合事項</summary><div class="body">
+<p>施工期間，甲方應提供合理之施工動線、材料進出空間及必要之水電使用條件。若因住戶、鄰房、管理單位、道路、停車、噪音限制、施工時段限制或其他現場管理因素影響施工，雙方應協調處理；因此增加之必要費用或工期，另行確認。</p>
+</div></details><details class="art"><summary>第十六條　合約終止及解除</summary><div class="body">
+<p>甲方於施工期間要求終止合約者，應給付乙方已完成部分之工程款、已訂製或已進場材料之費用，以及因此所生之必要費用。</p>
+<p>乙方無正當理由停工逾15日，經甲方書面催告後仍未復工者，甲方得終止合約，並就已完成且經查驗合格部分結算工程款。</p>
+</div></details><details class="art"><summary>第十七條　文件效力</summary><div class="body">
+<p>本合約內文（含第三條工程報價明細表）、龍德路1F至6F規劃圖、追加工程合約、追加減報價、變更簽認、施工確認紀錄及雙方可證明意思表示一致之書面或通訊紀錄，均得作為工程內容及結算之依據。文件內容如有衝突，以雙方較後確認之內容為準。</p>
+</div></details><details class="art"><summary>第十八條　其他</summary><div class="body">
+<p>本合約未盡事宜，由雙方依誠信原則協議處理；如有爭議，應先行協商。協商不成時，依中華民國相關法令辦理，雙方合意以臺灣高雄地方法院為第一審管轄法院。</p>
+<p>本合約經甲方攜回審閱<span class="fill empty" data-f="reviewDays">＿＿</span>日（不少於5日）後簽訂。本合約一式二份，雙方各執一份為憑。</p>
+<p>附件一：龍德路1F至6F規劃圖　附件二：保險單影本（正式簽約投保後補附）</p>
+</div></details>
+    </div>
+
+    <h3>附件二　保險單影本</h3>
+    <div class="card">
+      <p class="small muted" style="margin:0 0 10px">富邦產物雇主意外責任險及營造綜合保險，於正式簽約後投保，投保完成後補附於此。</p>
+      <div id="policyList"></div>
+      <form class="f adm" id="policyForm" style="margin-top:10px">
+        <label>上傳保單照片（可多張）<input type="file" name="files" accept="image/*" multiple></label>
+        <button class="btn" type="submit">上傳保單</button>
+      </form>
+    </div>
+
+  </section>
+
+  <!-- 平面圖 -->
+  <section class="pg" id="pg-plans">
+    <h2>平面圖</h2>
+    <p class="lead">合約附件一。點圖片會開新頁，可用兩指放大查看尺寸。</p>
+    <a class="plan" href="plans/1F.jpg" target="_blank" rel="noopener"><img src="plans/1F.jpg" alt="1F平面圖" loading="lazy"><div class="cap"><b>1F</b><span class="small muted">店面・儲藏室・露天儲藏室</span></div></a><a class="plan" href="plans/2F.jpg" target="_blank" rel="noopener"><img src="plans/2F.jpg" alt="2F平面圖" loading="lazy"><div class="cap"><b>2F</b><span class="small muted">臥室×2・客廳・廚房・化妝室</span></div></a><a class="plan" href="plans/3F.jpg" target="_blank" rel="noopener"><img src="plans/3F.jpg" alt="3F平面圖" loading="lazy"><div class="cap"><b>3F</b><span class="small muted">後臥・主臥・化妝室（含主臥浴室擴寬方案）</span></div></a><a class="plan" href="plans/4F.jpg" target="_blank" rel="noopener"><img src="plans/4F.jpg" alt="4F平面圖" loading="lazy"><div class="cap"><b>4F</b><span class="small muted">前臥・後臥・化妝室</span></div></a><a class="plan" href="plans/5F.jpg" target="_blank" rel="noopener"><img src="plans/5F.jpg" alt="5F平面圖" loading="lazy"><div class="cap"><b>5F</b><span class="small muted">前臥・後臥・化妝室</span></div></a><a class="plan" href="plans/6F.jpg" target="_blank" rel="noopener"><img src="plans/6F.jpg" alt="6F／頂樓平面圖" loading="lazy"><div class="cap"><b>6F／頂樓</b><span class="small muted">頂樓露臺・前臥・後臥</span></div></a><p class="small muted">設計：Grace Wu・比例 1:50・丈量日期 114/12/2</p>
+  </section>
+
+  <!-- 裝潢前 -->
+  <section class="pg" id="pg-before">
+    <h2>裝潢前現況</h2>
+    <p class="lead">施工前各樓層原始狀況，作為驗收及釐清既有問題（如原有漏水、管線老化）的依據。</p>
+    <div class="card adm">
+      <b>上傳現況照片</b>
+      <form class="f" id="beforeForm" style="margin-top:8px">
+        <label>位置<select name="floor"></select></label>
+        <label>說明（選填）<input name="caption" placeholder="例：2F 廁所壁面滲水"></label>
+        <label>照片（可多選）<input type="file" name="files" accept="image/*" multiple></label>
+        <button class="btn acc" type="submit">上傳</button>
+      </form>
+    </div>
+    <div id="beforeList"></div>
+  </section>
+
+  <!-- 進度 -->
+  <section class="pg" id="pg-progress">
+    <h2>施工進度</h2>
+    <p class="lead">每次施工的紀錄、照片與查驗結果。</p>
+    <div class="card adm">
+      <b>階段與驗收點</b>
+      <div id="statusEditor"></div>
+    </div>
+    <div class="card adm">
+      <b>新增施工紀錄</b>
+      <form class="f" id="updForm" style="margin-top:8px">
+        <label>日期<input type="date" name="date" required></label>
+        <label>階段<select name="stage"></select></label>
+        <label>標題<input name="title" required placeholder="例：2F～3F 冷熱水管配置完成"></label>
+        <label>說明<textarea name="note" placeholder="施工內容、需業主確認的事項"></textarea></label>
+        <label>照片（可多選）<input type="file" name="files" accept="image/*" multiple></label>
+        <button class="btn acc" type="submit">發布</button>
+      </form>
+    </div>
+    <div id="timeline"></div>
+  </section>
+
+  <footer>平安住股份有限公司・統編 90052437・07-9623551 分機555<br>
+    <button class="link" id="admBtn">平安住登入</button></footer>
+</main>
+
+<nav class="bar" role="tablist">
+  <button data-p="home" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>總覽</button>
+  <button data-p="contract" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>合約</button>
+  <button data-p="plans" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M3 11h8V4M11 20v-5h10"/></svg>平面圖</button>
+  <button data-p="before" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3.5"/></svg>施工前</button>
+  <button data-p="progress" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>進度</button>
+</nav>
+
+<div class="spin" id="spin"><div id="spinTxt">處理中…</div></div>
+
+<script>
+/* ======== 設定：貼上 Apps Script 網頁應用程式部署網址 ======== */
+const API = 'https://script.google.com/macros/s/AKfycbxqDwrg2CxSYpC7CpoVp32XBEsFH0O0qk6fjqJc7t0faKmeeOG3yTm3SBN-DANiFT7d/exec';
+/* ============================================================ */
+
+const FLOORS=['1F','2F','3F','4F','5F','6F／頂樓','外牆','其他'];
+const STAGES=[
+  {k:'s1',n:'第一階段',d:'打除清運、窗戶訂製、臨時水電',checks:['拆除完成查驗']},
+  {k:'s2',n:'第二階段',d:'水電、電箱、管線、鐵件',checks:['水電隱蔽前查驗','鐵件完成查驗']},
+  {k:'s3',n:'第三階段',d:'土水、防水、窗戶安裝、廁所完工',checks:['防水層隱蔽前查驗','廁所及窗戶完成查驗']},
+  {k:'s4',n:'第四階段',d:'批土、外牆防水、總驗收',checks:['外牆防水查驗','總驗收']}];
+const PAYS=[
+  {p:'第一期',c:'簽約時',pct:'20%',amt:1159620,need:['__SIGN__']},
+  {p:'第二期',c:'拆除完成查驗合格',pct:'20%',amt:1159620,need:['拆除完成查驗']},
+  {p:'第三期',c:'水電隱蔽前及鐵件完成查驗合格',pct:'20%',amt:1159620,need:['水電隱蔽前查驗','鐵件完成查驗']},
+  {p:'第四期',c:'廁所及窗戶完成查驗合格',pct:'20%',amt:1159620,need:['廁所及窗戶完成查驗']},
+  {p:'第五期・尾款',c:'總驗收完成，結算清運及追加減',pct:'20%',amt:1159620,need:['總驗收']}];
+
+const D={fields:{},docs:[],status:{stages:{},checks:{},paid:{}},photos:[],updates:[]};
+let PASS=sessionStorage.getItem('ld_pass')||'';
+let ADMIN=false;
+const $=(s,e=document)=>e.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'NT$'+n.toLocaleString('en-US');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const roc=s=>{if(!s)return'';const [y,m,d]=String(s).slice(0,10).split('-');return `${+y-1911}年${+m}月${+d}日`;};
+const fmtT=s=>{if(!s)return'';const d=new Date(s);return `${d.getFullYear()-1911}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+const img=(id,w)=>`https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`;
+const configured=()=>/^https:\/\/script\.google\.com\//.test(API);
+
+function busy(on,t){ $('#spin').classList.toggle('on',on); if(t) $('#spinTxt').textContent=t; }
+async function apiGet(){ const r=await fetch(API+'?action=all'+(PASS?'&pass='+encodeURIComponent(PASS):''),{cache:'no-store'}); const j=await r.json(); if(!j.ok) throw new Error(j.error); return j; }
+async function apiPost(body){ const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,pass:PASS})}); const j=await r.json(); if(!j.ok) throw new Error(j.error); return j; }
+
+/* ---------- nav ---------- */
+document.querySelectorAll('nav.bar button').forEach(b=>b.onclick=()=>go(b.dataset.p));
+function go(p){ document.querySelectorAll('nav.bar button').forEach(b=>b.setAttribute('aria-selected',b.dataset.p===p));
+  document.querySelectorAll('section.pg').forEach(s=>s.classList.toggle('on',s.id==='pg-'+p)); window.scrollTo(0,0); history.replaceState(null,'','#'+p); }
+const h=location.hash.slice(1); if(['home','contract','plans','before','progress'].includes(h)) go(h);
+
+/* ---------- contract helpers ---------- */
+$('#openAll').onclick=()=>document.querySelectorAll('details.art').forEach(d=>d.open=true);
+$('#closeAll').onclick=()=>document.querySelectorAll('details.art').forEach(d=>d.open=false);
+window.addEventListener('beforeprint',()=>document.querySelectorAll('details.art').forEach(d=>d.open=true));
+document.querySelectorAll('.doc table').forEach(t=>{
+  const heads=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim()); if(heads.includes('單價')) t.classList.add('qt'); const NUM=['數量','單價','金額','比例','金額（含稅）']; t.querySelectorAll('thead th').forEach((th,i)=>{ if(NUM.includes(th.textContent.trim())) th.classList.add('num'); });
+  t.querySelectorAll('tbody tr').forEach(tr=>{ const tds=[...tr.children]; let col=0;
+    tds.forEach(td=>{ td.setAttribute('data-label',heads[col]||''); if(['數量','單價','金額','比例','金額（含稅）'].includes(heads[col])) td.classList.add('num'); if(!td.textContent.trim()) td.classList.add('blank'); col+=+(td.getAttribute('colspan')||1); });
+    if(tds.some(td=>+(td.getAttribute('colspan')||1)>=3)) tr.classList.add(tds.length<=2?'tot':'grp'); });
+});
+function renderFields(){
+  const f=D.fields||{};
+  const put=(k,v,ph)=>document.querySelectorAll(`.fill[data-f="${k}"]`).forEach(el=>{el.textContent=v||ph;el.classList.toggle('empty',!v);});
+  put('startDate',roc(f.startDate),'＿＿年＿＿月＿＿日'); put('endDate',roc(f.endDate),'＿＿年＿＿月＿＿日'); put('reviewDays',f.reviewDays,'＿＿');
+  const fm=$('#fieldsForm'); ['startDate','endDate','reviewDays'].forEach(k=>fm[k].value=f[k]||'');
+}
+function mainDoc(){ return D.docs.find(d=>d.type==='主合約（簽署版）'); }
+function renderDocs(){
+  const md=mainDoc();
+  $('#kSign').innerHTML = md ? `已簽約${md.date?`<div class="small muted" style="font-family:var(--sans);font-weight:400">${esc(String(md.date).slice(0,10).split('-').map((v,i)=>i?+v:+v-1911).join('/'))}</div>`:''}` : '尚未簽約';
+  const list=[...D.docs].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.createdAt).localeCompare(String(b.createdAt)));
+  $('#docList').innerHTML = list.length ? list.map(d=>{
+    const imgs=(d.files||[]).filter(f=>String(f.mime).startsWith('image/')), pdfs=(d.files||[]).filter(f=>f.mime==='application/pdf');
+    return `<div class="card docc"><div class="dh"><span class="dt ${d.type==='主合約（簽署版）'?'main':''}">${esc(d.type)}</span><span class="muted small">${esc(roc(d.date))}</span></div>
+      <h4>${esc(d.title)}</h4>
+      ${imgs.length?`<div class="grid">${imgs.map((f,i)=>`<div class="ph"><a href="${img(f.id,2400)}" target="_blank" rel="noopener"><img src="${img(f.id,700)}" loading="lazy" alt="第${i+1}頁"></a><div class="t">第 ${i+1} 頁</div></div>`).join('')}</div>`:''}
+      ${pdfs.map(f=>`<a class="btn ghost block" style="margin-top:8px" href="https://drive.google.com/file/d/${encodeURIComponent(f.id)}/view" target="_blank" rel="noopener">開啟 PDF：${esc(f.name||'文件')}</a>`).join('')}
+      ${!(d.files||[]).length?'<div class="small muted">（尚無檔案）</div>':''}
+      ${ADMIN?`<button class="link" data-dd="${esc(d.id)}">刪除此文件</button>`:''}</div>`; }).join('')
+    : '<div class="empty">合約以紙本簽署，簽署完成後會將掃描檔上傳於此備查</div>';
+  $('#docList').querySelectorAll('[data-dd]').forEach(b=>b.onclick=()=>act('deleteDoc',{id:b.dataset.dd},'刪除此文件及所有檔案？'));
+}
+async function fileData(f){
+  if(f.type==='application/pdf'){ if(f.size>20*1024*1024) throw new Error('PDF 超過 20MB'); return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);}); }
+  return await shrink(f,2200);
+}
+
+/* ---------- stages / pay ---------- */
+const stg=k=>(D.status.stages||{})[k]||'未開始';
+const chk=n=>(D.status.checks||{})[n];
+function renderStages(){
+  $('#stages').innerHTML=STAGES.map((s,i)=>`<div class="stg" data-s="${stg(s.k)}"><div class="num">${stg(s.k)==='已完成'?'✓':i+1}</div>
+    <div><div><span class="t">${s.n}</span><span class="s">${stg(s.k)}</span></div><div class="d">${s.d}</div>
+    ${s.checks.map(c=>{const v=chk(c);return `<div class="chk"><span class="dot ${v?'pass':''}"></span><span>${c}${v?`<span class="muted small">　${esc(roc(v.date))}合格</span>`:''}</span></div>`;}).join('')}</div></div>`).join('');
+  const cur=[...STAGES].reverse().find(s=>stg(s.k)==='施工中')||[...STAGES].reverse().find(s=>stg(s.k)==='已完成');
+  $('#kStage').textContent=STAGES.every(s=>stg(s.k)==='已完成')?'全部完工':cur?`${cur.n}${stg(cur.k)}`:'準備中';
+  const paid=D.status.paid||{};
+  const ready=p=>p.need.every(n=>n==='__SIGN__'?!!mainDoc():!!chk(n));
+  $('#pays').innerHTML=PAYS.map((p,i)=>{const pd=paid[i];const st=pd?`<span class="pill done">已收款 ${esc(roc(pd))}</span>`:ready(p)?'<span class="pill go">可請款</span>':'<span class="pill">未達條件</span>';
+    return `<div class="payi"><div><b>${p.p}</b>　<span class="muted small">${p.pct}</span><div class="c">${p.c}</div>${st}</div>
+      <div class="a">${money(p.amt)}${ADMIN?`<br><button class="btn ghost sm" style="margin-top:6px" data-paid="${i}">${pd?'取消收款':'標記收款'}</button>`:''}</div></div>`;}).join('');
+  $('#pays').querySelectorAll('[data-paid]').forEach(b=>b.onclick=()=>{const p={...(D.status.paid||{})};const i=b.dataset.paid;if(p[i])delete p[i];else p[i]=today();saveStatus({paid:p});});
+  if(ADMIN){
+    $('#statusEditor').innerHTML=STAGES.map(s=>`<div class="stedit"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${s.n}</b>
+      <select data-st="${s.k}">${['未開始','施工中','已完成'].map(v=>`<option ${stg(s.k)===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="chips">${s.checks.map(c=>`<button class="btn sm ${chk(c)?'':'ghost'}" data-ck="${c}">${chk(c)?'✓ ':''}${c}</button>`).join('')}</div></div>`).join('')+
+      '<p class="small muted" style="margin:8px 0 0">點驗收點可標記／取消合格，日期自動為今天。</p>';
+    $('#statusEditor').querySelectorAll('[data-st]').forEach(sel=>sel.onchange=()=>saveStatus({stages:{...(D.status.stages||{}),[sel.dataset.st]:sel.value}}));
+    $('#statusEditor').querySelectorAll('[data-ck]').forEach(b=>b.onclick=()=>{const c={...(D.status.checks||{})};const n=b.dataset.ck;
+      if(c[n]){if(!confirm(`取消「${n}」合格紀錄？`))return;delete c[n];}else c[n]={date:today()};saveStatus({checks:c});});
+  }
+}
+async function saveStatus(patch){ const next={...D.status,...patch}; busy(true,'儲存中…');
+  try{ await apiPost({action:'saveStatus',...next}); D.status=next; renderStages(); }catch(err){ alert('儲存失敗：'+err.message); } busy(false); }
+
+/* ---------- photos ---------- */
+async function shrink(file,max=1600){
+  const bmp=await createImageBitmap(file); const sc=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const c=document.createElement('canvas'); c.width=Math.round(bmp.width*sc); c.height=Math.round(bmp.height*sc);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.8);
+}
+async function uploadAll(files,meta){
+  const ids=[]; let i=0;
+  for(const f of files){ i++; busy(true,`上傳照片 ${i}/${files.length}…`); const data=await shrink(f); const r=await apiPost({action:'uploadPhoto',data,...meta}); ids.push(r.id); }
+  return ids;
+}
+$('#beforeForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files]; if(!files.length) return alert('請選擇照片');
+  try{ await uploadAll(files,{cat:'before',floor:f.floor.value,caption:f.caption.value.trim()}); f.files.value=''; f.caption.value=''; await load(); }
+  catch(err){ alert('上傳失敗：'+err.message); } busy(false); };
+function phHtml(p){ return `<div class="ph"><a href="${img(p.fileId,2400)}" target="_blank" rel="noopener"><img src="${img(p.fileId,700)}" alt="${esc(p.caption||p.floor)}" loading="lazy"></a>
+  ${p.caption?`<div class="t">${esc(p.caption)}</div>`:''}${ADMIN?`<button class="x" data-dp="${esc(p.id)}">刪除</button>`:''}</div>`; }
+function renderBefore(){
+  const list=D.photos.filter(p=>p.cat==='before');
+  $('#beforeList').innerHTML=list.length?FLOORS.map(fl=>{const ps=list.filter(p=>p.floor===fl);return ps.length?`<div class="floorhd">${esc(fl)}　<span class="muted small">${ps.length} 張</span></div><div class="grid">${ps.map(phHtml).join('')}</div>`:'';}).join(''):'<div class="empty">尚未上傳裝潢前照片</div>';
+  $('#beforeList').querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>act('deletePhoto',{id:b.dataset.dp},'刪除這張照片？'));
+}
+
+$('#docForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files]; if(!files.length) return alert('請選擇檔案');
+  try{ busy(true,'建立文件…'); const r=await apiPost({action:'addDoc',type:f.type.value,title:f.title.value.trim(),date:f.date.value});
+    let i=0; for(const file of files){ i++; busy(true,`上傳 ${i}/${files.length}…`); await apiPost({action:'uploadDocFile',docId:r.id,name:file.name,data:await fileData(file)}); }
+    f.title.value=''; f.files.value=''; await load(); }
+  catch(err){ alert('上傳失敗：'+err.message); } busy(false); };
+$('#policyForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files]; if(!files.length) return alert('請選擇保單照片');
+  try{ await uploadAll(files,{cat:'policy',floor:'',caption:'保險單'}); f.files.value=''; await load(); }catch(err){ alert('上傳失敗：'+err.message); } busy(false); };
+function renderPolicy(){ const ps=D.photos.filter(p=>p.cat==='policy');
+  $('#policyList').innerHTML=ps.length?`<div class="grid">${ps.map(phHtml).join('')}</div>`:'<div class="empty" style="padding:16px">尚未投保（正式簽約後補附）</div>';
+  $('#policyList').querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>act('deletePhoto',{id:b.dataset.dp},'刪除這張保單照片？')); }
+
+/* ---------- updates ---------- */
+$('#updForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files];
+  try{ const ids=files.length?await uploadAll(files,{cat:'update',floor:'',caption:f.title.value.trim()}):[];
+    busy(true,'發布中…'); await apiPost({action:'addUpdate',date:f.date.value,stage:f.stage.value,title:f.title.value.trim(),note:f.note.value.trim(),photoIds:ids});
+    f.title.value='';f.note.value='';f.files.value=''; await load(); }
+  catch(err){ alert('發布失敗：'+err.message); } busy(false); };
+function evHtml(u){ const ps=(u.photoIds||[]).map(id=>D.photos.find(p=>p.id===id)).filter(Boolean);
+  return `<div class="ev"><div class="d">${esc(roc(u.date))}<span class="tag">${esc(String(u.stage||'').split('｜')[0])}</span></div>
+    <h4>${esc(u.title)}</h4>${u.note?`<p>${esc(u.note)}</p>`:''}${ps.length?`<div class="grid">${ps.map(p=>`<div class="ph"><a href="${img(p.fileId,2400)}" target="_blank" rel="noopener"><img src="${img(p.fileId,700)}" loading="lazy" alt=""></a></div>`).join('')}</div>`:''}
+    ${ADMIN?`<button class="link" data-du="${esc(u.id)}">刪除此紀錄</button>`:''}</div>`; }
+function renderUpdates(){
+  const list=[...D.updates].sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));
+  $('#timeline').innerHTML=list.length?list.map(evHtml).join(''):'<div class="empty">尚無施工紀錄</div>';
+  $('#latest').innerHTML=list.length?list.slice(0,2).map(evHtml).join('')+'<button class="btn ghost block" onclick="go(\'progress\')">查看全部紀錄</button>':'<div class="empty">開工後會在這裡公布施工紀錄與照片</div>';
+  document.querySelectorAll('[data-du]').forEach(b=>b.onclick=()=>act('deleteUpdate',{id:b.dataset.du},'刪除這筆施工紀錄（含照片）？'));
+}
+
+/* ---------- admin ---------- */
+async function act(action,data,ask){ if(ask&&!confirm(ask))return; busy(true,'處理中…'); try{ await apiPost({action,...data}); await load(); }catch(err){ alert('失敗：'+err.message); } busy(false); }
+$('#fieldsForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; busy(true,'儲存中…');
+  try{ await apiPost({action:'saveFields',startDate:f.startDate.value,endDate:f.endDate.value,reviewDays:f.reviewDays.value.trim()}); await load(); }
+  catch(err){ alert('失敗：'+err.message); } busy(false); };
+$('#admBtn').onclick=async()=>{
+  if(ADMIN){ if(confirm('登出管理模式？')){ PASS='';sessionStorage.removeItem('ld_pass'); setAdmin(false); await load(); } return; }
+  const p=prompt('請輸入平安住管理密碼'); if(!p) return; PASS=p; busy(true,'驗證中…');
+  try{ await apiPost({action:'checkAdmin'}); sessionStorage.setItem('ld_pass',p); setAdmin(true); await load(); }
+  catch(err){ PASS=''; alert('密碼錯誤'); } busy(false);
+};
+function setAdmin(on){ ADMIN=on; document.body.classList.toggle('admin',on); $('#admBtn').textContent=on?'登出管理模式':'平安住登入';  }
+
+/* ---------- init ---------- */
+const sel=(el,arr)=>el.innerHTML=arr.map(v=>`<option>${esc(v)}</option>`).join('');
+sel($('#beforeForm [name=floor]'),FLOORS);
+sel($('#updForm [name=stage]'),STAGES.map(s=>s.n+'｜'+s.d).concat(['其他']));
+$('#updForm [name=date]').value=today();
+
+async function load(){
+  const j=await apiGet();
+  Object.assign(D,{fields:j.fields||{},docs:j.docs||[],status:{stages:{},checks:{},paid:{},...(j.status||{})},photos:j.photos||[],updates:j.updates||[]});
+  if(PASS && !j.admin){ PASS=''; sessionStorage.removeItem('ld_pass'); setAdmin(false); } else if(j.admin && !ADMIN) setAdmin(true);
+  renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
+}
+renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
+if(!configured()){ const n=$('#sysNote'); n.style.display='block'; n.textContent='尚未設定後端網址：目前可閱讀合約與平面圖，簽署及進度功能需完成 Apps Script 部署。'; }
+else { busy(true,'讀取中…'); load().catch(err=>{ const n=$('#sysNote'); n.style.display='block'; n.textContent='資料讀取失敗：'+err.message; }).finally(()=>busy(false)); }
+</script>
+</body>
+</html>
