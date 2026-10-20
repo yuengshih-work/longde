@@ -78,6 +78,19 @@ h3{font-family:var(--serif);font-size:19px;margin:26px 0 10px}
 .payi .a{text-align:right;white-space:nowrap;font-weight:700}
 .pill{display:inline-block;font-size:12px;padding:0 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-weight:500;margin-top:4px}
 .pill.go{border-color:var(--accent);color:var(--accent)} .pill.done{border-color:var(--ok);color:var(--ok)}
+.pill.part{border-color:var(--warn);color:var(--warn)}
+.payi{flex-direction:column;gap:6px}
+.payi .hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.payi .lines{display:grid;gap:4px;padding:8px 10px;background:var(--paper);border:1px solid var(--line);border-radius:10px}
+.payi .ln{display:flex;align-items:center;gap:10px;min-height:40px;font-size:15px}
+.payi .ln input{width:22px;height:22px;accent-color:var(--ok);flex:none;margin:0}
+.payi .ln input:disabled{opacity:1}
+.payi .ln .nm{flex:1}
+.payi .ln .dt{font-size:12px;color:var(--ok);display:block;line-height:1.3}
+.payi .ln .m{font-variant-numeric:tabular-nums;white-space:nowrap}
+.payi .ln.got .m{color:var(--ok)}
+.paysum{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.paysum b{font-variant-numeric:tabular-nums}
 
 /* contract */
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
@@ -803,12 +816,14 @@ const STAGES=[
   {k:'s2',n:'第二階段',d:'水電、電箱、管線、鐵件',checks:['水電隱蔽前查驗','鐵件完成查驗']},
   {k:'s3',n:'第三階段',d:'土水、防水、窗戶安裝、廁所完工',checks:['防水層隱蔽前查驗','廁所及窗戶完成查驗']},
   {k:'s4',n:'第四階段',d:'批土、外牆防水、總驗收',checks:['外牆防水查驗','總驗收']}];
+const NET=1104400, TAX=55220; // 每期未稅 5,522,000×20%、營業稅 276,100×20%
 const PAYS=[
-  {p:'第一期',c:'簽約時',pct:'20%',amt:1159620,need:['__SIGN__']},
-  {p:'第二期',c:'拆除完成查驗合格',pct:'20%',amt:1159620,need:['拆除完成查驗']},
-  {p:'第三期',c:'水電隱蔽前及鐵件完成查驗合格',pct:'20%',amt:1159620,need:['水電隱蔽前查驗','鐵件完成查驗']},
-  {p:'第四期',c:'廁所及窗戶完成查驗合格',pct:'20%',amt:1159620,need:['廁所及窗戶完成查驗']},
-  {p:'第五期・尾款',c:'總驗收完成，結算清運及追加減',pct:'20%',amt:1159620,need:['總驗收']}];
+  {p:'第一期',c:'簽約時',pct:'20%',net:NET,tax:TAX,need:['__SIGN__']},
+  {p:'第二期',c:'拆除完成查驗合格',pct:'20%',net:NET,tax:TAX,need:['拆除完成查驗']},
+  {p:'第三期',c:'水電隱蔽前及鐵件完成查驗合格',pct:'20%',net:NET,tax:TAX,need:['水電隱蔽前查驗','鐵件完成查驗']},
+  {p:'第四期',c:'廁所及窗戶完成查驗合格',pct:'20%',net:NET,tax:TAX,need:['廁所及窗戶完成查驗']},
+  {p:'第五期・尾款',c:'總驗收完成，結算清運及追加減',pct:'20%',net:NET,tax:TAX,need:['總驗收']}];
+const TOTAL=PAYS.reduce((t,p)=>t+p.net+p.tax,0);
 
 const D={fields:{},docs:[],status:{stages:{},checks:{},paid:{}},photos:[],updates:[]};
 let PASS=sessionStorage.getItem('ld_pass')||'';
@@ -880,10 +895,22 @@ function renderStages(){
   $('#kStage').textContent=STAGES.every(s=>stg(s.k)==='已完成')?'全部完工':cur?`${cur.n}${stg(cur.k)}`:'準備中';
   const paid=D.status.paid||{};
   const ready=p=>p.need.every(n=>n==='__SIGN__'?!!mainDoc():!!chk(n));
-  $('#pays').innerHTML=PAYS.map((p,i)=>{const pd=paid[i];const st=pd?`<span class="pill done">已收款 ${esc(roc(pd))}</span>`:ready(p)?'<span class="pill go">可請款</span>':'<span class="pill">未達條件</span>';
-    return `<div class="payi"><div><b>${p.p}</b>　<span class="muted small">${p.pct}</span><div class="c">${p.c}</div>${st}</div>
-      <div class="a">${money(p.amt)}${ADMIN?`<br><button class="btn ghost sm" style="margin-top:6px" data-paid="${i}">${pd?'取消收款':'標記收款'}</button>`:''}</div></div>`;}).join('');
-  $('#pays').querySelectorAll('[data-paid]').forEach(b=>b.onclick=()=>{const p={...(D.status.paid||{})};const i=b.dataset.paid;if(p[i])delete p[i];else p[i]=today();saveStatus({paid:p});});
+  // 每期收款紀錄：{net:日期, tax:日期}；舊格式（單一日期字串）視為未稅、稅金皆已收
+  const pof=i=>{const v=paid[i];if(!v)return{};if(typeof v==='string')return{net:v,tax:v};return v;};
+  let got=0; PAYS.forEach((p,i)=>{const r=pof(i);if(r.net)got+=p.net;if(r.tax)got+=p.tax;});
+  const line=(i,key,nm,amt,dt)=>`<label class="ln ${dt?'got':''}"><input type="checkbox" data-pk="${i}|${key}" ${dt?'checked':''} ${ADMIN?'':'disabled'}>
+      <span class="nm">${nm}${dt?`<span class="dt">已收 ${esc(roc(dt))}</span>`:''}</span><span class="m">${money(amt)}</span></label>`;
+  $('#pays').innerHTML=`<div class="paysum"><span>已收款 <b>${money(got)}</b></span><span class="muted">未收 <b>${money(TOTAL-got)}</b></span></div>`+
+    PAYS.map((p,i)=>{const r=pof(i);const all=r.net&&r.tax,any=r.net||r.tax;
+    const st=all?'<span class="pill done">已收款</span>':any?`<span class="pill part">部分收款・${r.net?'稅金':'未稅'}未收</span>`:ready(p)?'<span class="pill go">可請款</span>':'<span class="pill">未達條件</span>';
+    return `<div class="payi"><div class="hd"><div><b>${p.p}</b>　<span class="muted small">${p.pct}</span><div class="c">${p.c}</div>${st}</div>
+      <div class="a">${money(p.net+p.tax)}<div class="muted small" style="font-weight:400">含稅</div></div></div>
+      <div class="lines">${line(i,'net','未稅金額',p.net,r.net)}${line(i,'tax','營業稅 5%',p.tax,r.tax)}</div></div>`;}).join('')+
+    (ADMIN?'<p class="small muted" style="margin:8px 0 0">勾選即標記收款，日期自動為今天；取消勾選會清除該筆收款日期。</p>':'');
+  $('#pays').querySelectorAll('[data-pk]').forEach(cb=>cb.onchange=()=>{
+    const [i,key]=cb.dataset.pk.split('|'); const p={...paid}; const r={...pof(i)};
+    if(cb.checked) r[key]=today(); else { if(!confirm(`取消${PAYS[i].p}「${key==='net'?'未稅金額':'營業稅'}」收款紀錄？`)){cb.checked=true;return;} delete r[key]; }
+    if(r.net||r.tax) p[i]=r; else delete p[i]; saveStatus({paid:p});});
   if(ADMIN){
     $('#statusEditor').innerHTML=STAGES.map(s=>`<div class="stedit"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${s.n}</b>
       <select data-st="${s.k}">${['未開始','施工中','已完成'].map(v=>`<option ${stg(s.k)===v?'selected':''}>${v}</option>`).join('')}</select></div>
@@ -956,7 +983,7 @@ $('#admBtn').onclick=async()=>{
   if(ADMIN){ if(confirm('登出管理模式？')){ PASS='';sessionStorage.removeItem('ld_pass'); setAdmin(false); await load(); } return; }
   const p=prompt('請輸入平安住管理密碼'); if(!p) return; PASS=p; busy(true,'驗證中…');
   try{ await apiPost({action:'checkAdmin'}); sessionStorage.setItem('ld_pass',p); setAdmin(true); await load(); }
-  catch(err){ PASS=''; alert('密碼錯誤'); } busy(false);
+  catch(err){ PASS=''; alert('登入失敗：'+err.message); } busy(false);
 };
 function setAdmin(on){ ADMIN=on; document.body.classList.toggle('admin',on); $('#admBtn').textContent=on?'登出管理模式':'平安住登入';  }
 
