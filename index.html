@@ -180,6 +180,25 @@ form.f{display:grid;gap:12px}
 .ph img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--line)}
 .ph .t{padding:6px 8px;font-size:13px;line-height:1.4}
 .ph .x{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;border:0;border-radius:6px;font-size:13px;padding:4px 8px}
+.ph .e{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;border:0;border-radius:6px;font-size:13px;padding:4px 8px;cursor:pointer}
+.rowlinks{display:flex;gap:16px}
+dialog.dlg{border:0;border-radius:14px;padding:0;width:min(600px,calc(100vw - 20px));max-height:calc(100dvh - 20px);background:var(--card);color:var(--ink)}
+dialog.dlg::backdrop{background:rgba(20,24,29,.5)}
+dialog.dlg .dh{position:sticky;top:0;z-index:2;background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+dialog.dlg .dh b{font-family:var(--serif);font-size:19px}
+dialog.dlg .db{padding:16px;display:grid;gap:12px}
+dialog.dlg .df{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:8px;justify-content:flex-end}
+.x-close{background:none;border:0;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}
+.hint{font-size:13px;color:var(--muted)}
+.eph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.eph .t{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.eph img{width:100%;aspect-ratio:1;object-fit:cover}
+.eph .pdf{aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:6px;font-size:12px;text-align:center;line-height:1.4;word-break:break-all}
+.eph button{position:absolute;left:4px;right:4px;bottom:4px;border:0;border-radius:6px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:4px 0;cursor:pointer}
+.eph .t.rm img,.eph .t.rm .pdf{opacity:.25}
+.eph .t.rm button{background:var(--accent)}
+.newprev{display:flex;flex-wrap:wrap;gap:6px}
+.newprev img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
 .floorhd{font-family:var(--serif);font-weight:700;margin:18px 0 8px}
 .empty{padding:26px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;font-size:15px}
 
@@ -803,6 +822,14 @@ footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
   <button data-p="progress" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>進度</button>
 </nav>
 
+<dialog class="dlg" id="edlg">
+  <form id="edForm" novalidate>
+    <div class="dh"><b id="edTitle">編輯</b><button type="button" class="x-close" data-eclose aria-label="關閉">×</button></div>
+    <div class="db f" id="edBody"></div>
+    <div class="df"><button type="button" class="btn ghost" data-eclose>取消</button><button type="submit" class="btn acc">儲存</button></div>
+  </form>
+</dialog>
+
 <div class="spin" id="spin"><div id="spinTxt">處理中…</div></div>
 
 <script>
@@ -875,9 +902,10 @@ function renderDocs(){
       ${imgs.length?`<div class="grid">${imgs.map((f,i)=>`<div class="ph"><a href="${img(f.id,2400)}" target="_blank" rel="noopener"><img src="${img(f.id,700)}" loading="lazy" alt="第${i+1}頁"></a><div class="t">第 ${i+1} 頁</div></div>`).join('')}</div>`:''}
       ${pdfs.map(f=>`<a class="btn ghost block" style="margin-top:8px" href="https://drive.google.com/file/d/${encodeURIComponent(f.id)}/view" target="_blank" rel="noopener">開啟 PDF：${esc(f.name||'文件')}</a>`).join('')}
       ${!(d.files||[]).length?'<div class="small muted">（尚無檔案）</div>':''}
-      ${ADMIN?`<button class="link" data-dd="${esc(d.id)}">刪除此文件</button>`:''}</div>`; }).join('')
+      ${ADMIN?`<div class="rowlinks"><button class="link" data-ed="${esc(d.id)}">編輯／補上傳</button><button class="link" data-dd="${esc(d.id)}">刪除此文件</button></div>`:''}</div>`; }).join('')
     : '<div class="empty">合約以紙本簽署，簽署完成後會將掃描檔上傳於此備查</div>';
   $('#docList').querySelectorAll('[data-dd]').forEach(b=>b.onclick=()=>act('deleteDoc',{id:b.dataset.dd},'刪除此文件及所有檔案？'));
+  $('#docList').querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>editDoc(D.docs.find(d=>d.id===b.dataset.ed)));
 }
 async function fileData(f){
   if(f.type==='application/pdf'){ if(f.size>20*1024*1024) throw new Error('PDF 超過 20MB'); return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);}); }
@@ -939,11 +967,12 @@ $('#beforeForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const
   try{ await uploadAll(files,{cat:'before',floor:f.floor.value,caption:f.caption.value.trim()}); f.files.value=''; f.caption.value=''; await load(); }
   catch(err){ alert('上傳失敗：'+err.message); } busy(false); };
 function phHtml(p){ return `<div class="ph"><a href="${img(p.fileId,2400)}" target="_blank" rel="noopener"><img src="${img(p.fileId,700)}" alt="${esc(p.caption||p.floor)}" loading="lazy"></a>
-  ${p.caption?`<div class="t">${esc(p.caption)}</div>`:''}${ADMIN?`<button class="x" data-dp="${esc(p.id)}">刪除</button>`:''}</div>`; }
+  ${p.caption?`<div class="t">${esc(p.caption)}</div>`:''}${ADMIN?`<button class="e" data-ep="${esc(p.id)}">編輯</button><button class="x" data-dp="${esc(p.id)}">刪除</button>`:''}</div>`; }
 function renderBefore(){
   const list=D.photos.filter(p=>p.cat==='before');
   $('#beforeList').innerHTML=list.length?FLOORS.map(fl=>{const ps=list.filter(p=>p.floor===fl);return ps.length?`<div class="floorhd">${esc(fl)}　<span class="muted small">${ps.length} 張</span></div><div class="grid">${ps.map(phHtml).join('')}</div>`:'';}).join(''):'<div class="empty">尚未上傳裝潢前照片</div>';
   $('#beforeList').querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>act('deletePhoto',{id:b.dataset.dp},'刪除這張照片？'));
+  $('#beforeList').querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>editPhoto(D.photos.find(p=>p.id===b.dataset.ep)));
 }
 
 $('#docForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files]; if(!files.length) return alert('請選擇檔案');
@@ -955,7 +984,8 @@ $('#policyForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const
   try{ await uploadAll(files,{cat:'policy',floor:'',caption:'保險單'}); f.files.value=''; await load(); }catch(err){ alert('上傳失敗：'+err.message); } busy(false); };
 function renderPolicy(){ const ps=D.photos.filter(p=>p.cat==='policy');
   $('#policyList').innerHTML=ps.length?`<div class="grid">${ps.map(phHtml).join('')}</div>`:'<div class="empty" style="padding:16px">尚未投保（正式簽約後補附）</div>';
-  $('#policyList').querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>act('deletePhoto',{id:b.dataset.dp},'刪除這張保單照片？')); }
+  $('#policyList').querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>act('deletePhoto',{id:b.dataset.dp},'刪除這張保單照片？'));
+  $('#policyList').querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>editPhoto(D.photos.find(p=>p.id===b.dataset.ep))); }
 
 /* ---------- updates ---------- */
 $('#updForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const files=[...f.files.files];
@@ -966,13 +996,71 @@ $('#updForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const fi
 function evHtml(u){ const ps=(u.photoIds||[]).map(id=>D.photos.find(p=>p.id===id)).filter(Boolean);
   return `<div class="ev"><div class="d">${esc(roc(u.date))}<span class="tag">${esc(String(u.stage||'').split('｜')[0])}</span></div>
     <h4>${esc(u.title)}</h4>${u.note?`<p>${esc(u.note)}</p>`:''}${ps.length?`<div class="grid">${ps.map(p=>`<div class="ph"><a href="${img(p.fileId,2400)}" target="_blank" rel="noopener"><img src="${img(p.fileId,700)}" loading="lazy" alt=""></a></div>`).join('')}</div>`:''}
-    ${ADMIN?`<button class="link" data-du="${esc(u.id)}">刪除此紀錄</button>`:''}</div>`; }
+    ${ADMIN?`<div class="rowlinks"><button class="link" data-eu="${esc(u.id)}">編輯此紀錄</button><button class="link" data-du="${esc(u.id)}">刪除此紀錄</button></div>`:''}</div>`; }
 function renderUpdates(){
   const list=[...D.updates].sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt).localeCompare(String(a.createdAt)));
   $('#timeline').innerHTML=list.length?list.map(evHtml).join(''):'<div class="empty">尚無施工紀錄</div>';
   $('#latest').innerHTML=list.length?list.slice(0,2).map(evHtml).join('')+'<button class="btn ghost block" onclick="go(\'progress\')">查看全部紀錄</button>':'<div class="empty">開工後會在這裡公布施工紀錄與照片</div>';
   document.querySelectorAll('[data-du]').forEach(b=>b.onclick=()=>act('deleteUpdate',{id:b.dataset.du},'刪除這筆施工紀錄（含照片）？'));
+  document.querySelectorAll('[data-eu]').forEach(b=>b.onclick=()=>editUpdate(D.updates.find(u=>u.id===b.dataset.eu)));
 }
+
+/* ---------- 編輯 ---------- */
+let ED_SAVE=null;
+function openEditor(title,html,onSave){ $('#edTitle').textContent=title; $('#edBody').innerHTML=html; ED_SAVE=onSave; $('#edlg').showModal(); $('#edlg .db').scrollTop=0; }
+document.querySelectorAll('[data-eclose]').forEach(b=>b.onclick=()=>$('#edlg').close());
+$('#edForm').onsubmit=async e=>{ e.preventDefault(); if(!ED_SAVE) return;
+  try{ const ok=await ED_SAVE($('#edBody')); if(ok===false){ busy(false); return; } $('#edlg').close(); await load(); }
+  catch(err){ alert('儲存失敗：'+err.message); } busy(false); };
+const optsH=(arr,cur)=>{ const a=arr.includes(cur)||!cur?arr:[cur,...arr]; return a.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join(''); };
+function tilesHtml(items){ return items.length?`<div class="eph">${items.map(t=>`<div class="t" data-tid="${esc(t.id)}">${t.img?`<img src="${img(t.img,300)}" alt="">`:`<div class="pdf">📄 ${esc(t.name||'PDF')}</div>`}<button type="button">移除</button></div>`).join('')}</div>`:'<div class="hint">（目前沒有）</div>'; }
+function bindTiles(box){ box.querySelectorAll('.eph .t').forEach(t=>t.querySelector('button').onclick=()=>{ t.classList.toggle('rm'); t.querySelector('button').textContent=t.classList.contains('rm')?'復原':'移除'; }); }
+const marked=box=>[...box.querySelectorAll('.eph .t.rm')].map(t=>t.dataset.tid);
+function bindPreview(input,out){ input.onchange=()=>{ out.innerHTML=[...input.files].map(f=>f.type.startsWith('image/')?`<img src="${URL.createObjectURL(f)}" alt="">`:`<span class="small">📄 ${esc(f.name)}</span>`).join(''); }; }
+
+function editUpdate(u){ if(!u) return;
+  const ps=(u.photoIds||[]).map(id=>D.photos.find(p=>p.id===id)).filter(Boolean);
+  const stages=STAGES.map(s=>s.n+'｜'+s.d).concat(['其他']);
+  openEditor('編輯施工紀錄',`
+    <label>日期<input type="date" name="date" value="${esc(String(u.date||'').slice(0,10))}" required></label>
+    <label>階段<select name="stage">${optsH(stages,u.stage)}</select></label>
+    <label>標題<input name="title" value="${esc(u.title)}" required></label>
+    <label>說明<textarea name="note">${esc(u.note)}</textarea></label>
+    <label>目前照片（點「移除」可刪掉單張）</label>${tilesHtml(ps.map(p=>({id:p.id,img:p.fileId})))}
+    <label>補上傳照片（可多選）<input type="file" name="files" accept="image/*" multiple></label><div class="newprev" id="np"></div>`,
+    async box=>{ const v=n=>box.querySelector(`[name=${n}]`).value.trim();
+      if(!v('date')||!v('title')){ alert('請填日期和標題'); return false; }
+      const rm=marked(box); if(rm.length&&!confirm(`確定移除 ${rm.length} 張照片？`)) return false;
+      const files=[...box.querySelector('[name=files]').files];
+      const add=files.length?await uploadAll(files,{cat:'update',floor:'',caption:v('title')}):[];
+      busy(true,'儲存中…');
+      await apiPost({action:'editUpdate',id:u.id,date:v('date'),stage:v('stage'),title:v('title'),note:box.querySelector('[name=note]').value.trim(),addPhotoIds:add,removePhotoIds:rm}); });
+  bindTiles($('#edBody')); bindPreview($('#edBody [name=files]'),$('#np')); }
+
+function editDoc(d){ if(!d) return;
+  const types=['主合約（簽署版）','追加合約','變更簽認','其他文件'];
+  openEditor('編輯合約文件',`
+    <label>類型<select name="type">${optsH(types,d.type)}</select></label>
+    <label>名稱<input name="title" value="${esc(d.title)}" required></label>
+    <label>簽訂日期<input type="date" name="date" value="${esc(String(d.date||'').slice(0,10))}"></label>
+    <label>目前檔案（點「移除」可刪掉單頁）</label>${tilesHtml((d.files||[]).map(f=>({id:f.id,img:String(f.mime).startsWith('image/')?f.id:'',name:f.name})))}
+    <label>補上傳檔案（照片或 PDF，可多選，會接在最後面）<input type="file" name="files" accept="image/*,application/pdf" multiple></label><div class="newprev" id="np"></div>`,
+    async box=>{ const v=n=>box.querySelector(`[name=${n}]`).value.trim();
+      if(!v('title')){ alert('請填名稱'); return false; }
+      const rm=marked(box); if(rm.length&&!confirm(`確定移除 ${rm.length} 個檔案？`)) return false;
+      const files=[...box.querySelector('[name=files]').files]; let i=0;
+      for(const f of files){ i++; busy(true,`上傳 ${i}/${files.length}…`); await apiPost({action:'uploadDocFile',docId:d.id,name:f.name,data:await fileData(f)}); }
+      busy(true,'儲存中…');
+      await apiPost({action:'editDoc',id:d.id,type:v('type'),title:v('title'),date:v('date'),removeFileIds:rm}); });
+  bindTiles($('#edBody')); bindPreview($('#edBody [name=files]'),$('#np')); }
+
+function editPhoto(p){ if(!p) return;
+  openEditor(p.cat==='policy'?'編輯保單照片說明':'編輯照片說明',`
+    <img src="${img(p.fileId,700)}" alt="" style="border-radius:8px;max-height:240px;object-fit:contain;background:var(--paper);margin:0 auto">
+    ${p.cat==='policy'?'':`<label>位置<select name="floor">${optsH(FLOORS,p.floor)}</select></label>`}
+    <label>說明<input name="caption" value="${esc(p.caption)}"></label>`,
+    async box=>{ busy(true,'儲存中…'); const fl=box.querySelector('[name=floor]');
+      await apiPost({action:'editPhoto',id:p.id,caption:box.querySelector('[name=caption]').value.trim(),...(fl?{floor:fl.value}:{})}); }); }
 
 /* ---------- admin ---------- */
 async function act(action,data,ask){ if(ask&&!confirm(ask))return; busy(true,'處理中…'); try{ await apiPost({action,...data}); await load(); }catch(err){ alert('失敗：'+err.message); } busy(false); }
