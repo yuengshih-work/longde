@@ -853,7 +853,10 @@ const PAYS=[
 const TOTAL=PAYS.reduce((t,p)=>t+p.net+p.tax,0);
 
 const D={fields:{},docs:[],status:{stages:{},checks:{},paid:{}},photos:[],updates:[]};
-let PASS=sessionStorage.getItem('ld_pass')||'';
+/* 一次登入：與「專案管理總網頁」共用同一台裝置上的管理密碼（pj_pass），不必再輸入 */
+const LS={get(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}},set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k);}catch(e){}}};
+let LD_OUT=false; try{LD_OUT=sessionStorage.getItem('ld_out')==='1';}catch(e){}
+let PASS=LS.get('ld_pass')||(LD_OUT?'':LS.get('pj_pass'))||'';
 let ADMIN=false;
 const $=(s,e=document)=>e.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1068,9 +1071,9 @@ $('#fieldsForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; busy(
   try{ await apiPost({action:'saveFields',startDate:f.startDate.value,endDate:f.endDate.value,reviewDays:f.reviewDays.value.trim()}); await load(); }
   catch(err){ alert('失敗：'+err.message); } busy(false); };
 $('#admBtn').onclick=async()=>{
-  if(ADMIN){ if(confirm('登出管理模式？')){ PASS='';sessionStorage.removeItem('ld_pass'); setAdmin(false); await load(); } return; }
+  if(ADMIN){ if(confirm('登出管理模式？')){ PASS='';LS.set('ld_pass','');try{sessionStorage.setItem('ld_out','1');}catch(e){} setAdmin(false); await load(); } return; }
   const p=prompt('請輸入平安住管理密碼'); if(!p) return; PASS=p; busy(true,'驗證中…');
-  try{ await apiPost({action:'checkAdmin'}); sessionStorage.setItem('ld_pass',p); setAdmin(true); await load(); }
+  try{ await apiPost({action:'checkAdmin'}); if(p!==LS.get('pj_pass'))LS.set('ld_pass',p); try{sessionStorage.removeItem('ld_out');}catch(e){} setAdmin(true); await load(); }
   catch(err){ PASS=''; alert('登入失敗：'+err.message); } busy(false);
 };
 function setAdmin(on){ ADMIN=on; document.body.classList.toggle('admin',on); $('#admBtn').textContent=on?'登出管理模式':'平安住登入';  }
@@ -1084,7 +1087,7 @@ $('#updForm [name=date]').value=today();
 async function load(){
   const j=await apiGet();
   Object.assign(D,{fields:j.fields||{},docs:j.docs||[],status:{stages:{},checks:{},paid:{},...(j.status||{})},photos:j.photos||[],updates:j.updates||[]});
-  if(PASS && !j.admin){ PASS=''; sessionStorage.removeItem('ld_pass'); setAdmin(false); } else if(j.admin && !ADMIN) setAdmin(true);
+  if(PASS && !j.admin){ if(PASS===LS.get('ld_pass'))LS.set('ld_pass',''); PASS=''; setAdmin(false); } else if(j.admin && !ADMIN) setAdmin(true);
   renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
 }
 renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
