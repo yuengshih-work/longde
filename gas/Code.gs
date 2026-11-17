@@ -21,6 +21,11 @@
  *     BOOK_CONTRACT_ID 記帳系統中此工程的合約ID（在記帳系統「合約」頁可複製；或改填 BOOK_SITE_ID 案場ID）
  *   可選：BOOK_AMOUNTS  各期金額，以逗號分隔（記帳系統未建立付款期程時才會用到）
  *   未設定 BOOK_URL 時完全不影響原本功能。
+ *
+ * ── 封窗確認線上簽署（2026-11-17 新增）──
+ *   kv：seal（圖面與明細）、sealClient（業主簽署）、sealApprove（平安住核可）、contractorSig（承辦簽名，核可時自動帶入）
+ *   業主免登入即可簽署（需勾選全部封窗）；核可時產生「已簽署 PDF」存入雲端硬碟，並自動加入合約文件（類型：變更簽認）。
+ *   更新後請「管理部署作業 → 編輯 → 版本：新版本 → 部署」，網址不變。
  */
 
 const SHEETS = {
@@ -112,7 +117,16 @@ function trash_(fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); }
 function doGet(e) {
   try {
     const isAdmin = (e.parameter.pass || '') === prop_('ADMIN_PASS');
+    if (e.parameter.action === 'file') { // 管理端合成已簽署 PDF 用：讀取專案資料夾內的圖片
+      if (!isAdmin) throw new Error('管理密碼錯誤');
+      const f = DriveApp.getFileById(e.parameter.id);
+      if (!f.getParents().hasNext() || f.getParents().next().getId() !== prop_('FOLDER_ID')) throw new Error('檔案不在專案資料夾');
+      const b = f.getBlob();
+      return out_({ ok: true, data: 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) });
+    }
     return out_({
+      seal: kvGet_('seal'), sealClient: kvGet_('sealClient'), sealApprove: kvGet_('sealApprove'),
+      contractorSig: isAdmin ? kvGet_('contractorSig') : null,
       ok: true,
       fields: kvGet_('fields') || {},
       docs: rows_('docs').map(d => Object.assign(d, { files: JSON.parse(d.files || '[]') })),
@@ -225,6 +239,53 @@ function doPost(e) {
         if (b.caption != null) sheet_('photos').getRange(r, 4).setValue(b.caption);
         break;
       }
+      /* ---------- 封窗確認 ---------- */
+      case 'sealPublish': {
+        needAdmin();
+        const old = kvGet_('seal') || {};
+        const items = (b.items || []).map((it, i) => ({ n: i + 1, floor: String(it.floor || ''), face: String(it.face || ''), note: String(it.note || '') }));
+        if (!items.length) throw new Error('請至少列出一處封窗');
+        const fileId = b.data ? saveImage_(b.data, '封窗確認圖_v' + ((old.ver || 0) + 1) + '.png') : old.fileId;
+        if (!fileId) throw new Error('請上傳封窗確認圖');
+        const seal = { ver: (old.ver || 0) + 1, fileId: fileId, title: b.title || '龍德路 外觀立面封窗確認書', items: items, publishedAt: now_() };
+        kvSet_('seal', seal); res.seal = seal; log_('sealPublish', 'v' + seal.ver + ' ' + items.length + '處'); break;
+      }
+      case 'sealSign': { // 業主：免登入
+        const seal = kvGet_('seal'); if (!seal) throw new Error('尚未發布封窗確認圖');
+        if (Number(b.ver) !== seal.ver) throw new Error('圖面已更新，請重新整理頁面後再簽署');
+        const cur = kvGet_('sealClient'); if (cur && cur.ver === seal.ver) throw new Error('此版圖面已完成簽署');
+        const name = String(b.name || '').trim(); if (!name) throw new Error('請填寫姓名');
+        const checked = (b.checked || []).map(Number);
+        if (!seal.items.every(it => checked.indexOf(it.n) >= 0)) throw new Error('請勾選全部封窗位置');
+        if (!/^data:image\/png;base64,/.test(String(b.signature || ''))) throw new Error('簽名格式錯誤');
+        const sigFileId = saveImage_(b.signature, '封窗確認_業主簽名_v' + seal.ver + '_' + uid_() + '.png');
+        const c = { name: name.slice(0, 40), sigFileId: sigFileId, signedAt: now_(), ver: seal.ver, checked: checked };
+        unapprove_(); kvSet_('sealClient', c); res.sealClient = c; log_('sealSign', name + ' v' + seal.ver); break;
+      }
+      case 'sealReset': {
+        needAdmin(); unapprove_(); kvDel_('sealClient'); log_('sealReset', ''); break;
+      }
+      case 'sealApprove': {
+        needAdmin();
+        const seal = kvGet_('seal'), c = kvGet_('sealClient');
+        if (!seal || !c || c.ver !== seal.ver) throw new Error('業主尚未依目前版本簽署');
+        if (b.clientSignedAt !== c.signedAt) throw new Error('業主簽署資料已變動，請重新整理');
+        let k = kvGet_('contractorSig');
+        if (b.signature) { k = { fileId: saveImage_(b.signature, '平安住承辦簽名_' + uid_() + '.png'), rep: b.rep || '' }; kvSet_('contractorSig', k); }
+        if (!k) throw new Error('請先簽名');
+        if (b.rep && b.rep !== k.rep) { k.rep = b.rep; kvSet_('contractorSig', k); }
+        unapprove_();
+        const name = '龍德路_封窗確認書_已簽署_第' + seal.ver + '版.pdf';
+        const pdfFileId = saveImage_(b.pdf, name);
+        const docId = uid_(); const day = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
+        sheet_('docs').appendRow([docId, '變更簽認', '外觀立面封窗確認書（第' + seal.ver + '版・已簽署）', '', JSON.stringify([{ id: pdfFileId, mime: 'application/pdf', name: name }]), now_()]);
+        setText_('docs', findRow_('docs', docId), 4, day);
+        const a = { rep: k.rep, sigFileId: k.fileId, approvedAt: b.approvedAt || now_(), ver: seal.ver, clientSignedAt: c.signedAt, pdfFileId: pdfFileId, docId: docId };
+        kvSet_('sealApprove', a); res.sealApprove = a; log_('sealApprove', k.rep + ' v' + seal.ver); break;
+      }
+      case 'sealUnapprove': {
+        needAdmin(); unapprove_(); log_('sealUnapprove', ''); break;
+      }
       default:
         throw new Error('未知的操作');
     }
@@ -236,6 +297,13 @@ function doPost(e) {
   }
 }
 
+
+function unapprove_() {
+  const a = kvGet_('sealApprove'); if (!a) return;
+  if (a.docId) { const r = findRow_('docs', a.docId); if (r > 0) sheet_('docs').deleteRow(r); }
+  if (a.pdfFileId) trash_(a.pdfFileId);
+  kvDel_('sealApprove');
+}
 
 /* ---------- 記帳系統連動：收款狀態 ---------- */
 function pushPaidToBook_(paid) {

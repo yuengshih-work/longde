@@ -222,6 +222,24 @@ body.admin .admtag{display:block}
 .spin div{background:var(--card);padding:16px 22px;border-radius:12px;font-size:15px}
 footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
 
+/* 封窗確認 */
+.sh{font-family:var(--serif);font-size:18px;margin:0 0 10px}
+.sealist{display:grid;gap:6px}
+.sli{display:flex;align-items:center;gap:10px;min-height:46px;padding:6px 12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;font-size:16px;cursor:pointer}
+.sli input{width:24px;height:24px;accent-color:var(--ok);flex:none;margin:0}
+.sli .no{width:28px;height:28px;border-radius:50%;background:#C0392B;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.sli:has(input:checked){border-color:var(--ok)}
+.pad{position:relative;background:#fff;border:1.5px solid var(--ink);border-radius:10px;height:190px;touch-action:none}
+.pad canvas{width:100%;height:100%;display:block;border-radius:10px}
+.pad .hint2{position:absolute;left:12px;bottom:8px;font-size:12px;color:#8a8a8a;pointer-events:none}
+.agree{display:flex !important;gap:10px;align-items:flex-start;color:var(--ink) !important;font-size:16px !important}
+.agree input{width:22px !important;height:22px;margin-top:4px;flex:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:15px;margin-bottom:10px}
+.kv span{color:var(--muted)} .kv b{font-weight:500}
+.sigimg{background:#fff;border:1px dashed var(--line);border-radius:10px;height:120px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sigimg img{max-height:112px;width:auto}
+.stamp{display:inline-block;margin-top:8px;font-size:13px;color:var(--ok);border:1.5px solid var(--ok);border-radius:6px;padding:0 8px;font-weight:700}
+
 @media print{
   nav.bar,.toolbar,.adm,.no-print,header,footer,.admtag{display:none !important}
   body{padding:0;background:#fff}
@@ -249,6 +267,7 @@ footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
     <div class="kpis">
       <div class="kpi"><div class="k">合約狀態</div><div class="v" id="kSign">讀取中</div></div>
       <div class="kpi"><div class="k">目前進度</div><div class="v" id="kStage">讀取中</div></div>
+      <div class="kpi wide" style="cursor:pointer" onclick="go('contract');setTimeout(()=>$('#seal').scrollIntoView({behavior:'smooth'}),50)"><div class="k">封窗確認</div><div class="v" id="kSeal">讀取中</div></div>
       <div class="kpi wide"><div class="k">合約總價（含5%營業稅）</div><div class="v">NT$5,798,100</div></div>
     </div>
     <h3 style="margin-top:18px">施工階段與驗收點</h3>
@@ -274,6 +293,20 @@ footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
       </form>
     </div>
     <div id="docList"></div>
+
+    <!-- 封窗確認（線上簽署） -->
+    <h3 id="seal">外觀立面封窗確認書</h3>
+    <p class="lead">請對照立面圖逐項確認封窗位置（紅色斜線為封窗，數字為編號），全部勾選後簽名送出。平安住核可後會產生已簽署 PDF。</p>
+    <form class="f card adm" id="sealAdmForm">
+      <b style="font-family:var(--serif)">平安住管理｜發布封窗確認圖</b>
+      <label>標題<input name="title"></label>
+      <label>封窗確認圖（PDF 或圖片）<input type="file" name="file" accept="application/pdf,image/*"></label>
+      <label>封窗明細（一行一處，依序自動編號：樓層 立面 說明）<textarea name="items" rows="8" placeholder="2F 正面 凸窗旁小窗&#10;3F 正面 凸窗旁小窗"></textarea></label>
+      <button class="btn acc block" type="submit">發布</button>
+      <span class="small muted" id="sealAdmInfo"></span>
+    </form>
+    <div id="sealView"></div>
+    <div id="sealSign"></div>
 
     <h3 id="fulltext">主合約條文</h3>
     <p class="lead">共十八條，點條文標題展開閱讀。</p>
@@ -810,6 +843,7 @@ footer{font-size:13px;color:var(--muted);text-align:center;padding:18px 0 6px}
     <div id="timeline"></div>
   </section>
 
+
   <footer>平安住股份有限公司・統編 90052437・07-9623551 分機555<br>
     <button class="link" id="admBtn">平安住登入</button></footer>
 </main>
@@ -876,6 +910,7 @@ document.querySelectorAll('nav.bar button').forEach(b=>b.onclick=()=>go(b.datase
 function go(p){ document.querySelectorAll('nav.bar button').forEach(b=>b.setAttribute('aria-selected',b.dataset.p===p));
   document.querySelectorAll('section.pg').forEach(s=>s.classList.toggle('on',s.id==='pg-'+p)); window.scrollTo(0,0); history.replaceState(null,'','#'+p); }
 const h=location.hash.slice(1); if(['home','contract','plans','before','progress'].includes(h)) go(h);
+else if(h==='seal'){ go('contract'); history.replaceState(null,'','#seal'); setTimeout(()=>$('#seal').scrollIntoView(),300); }
 
 /* ---------- contract helpers ---------- */
 $('#openAll').onclick=()=>document.querySelectorAll('details.art').forEach(d=>d.open=true);
@@ -1078,6 +1113,150 @@ $('#admBtn').onclick=async()=>{
 };
 function setAdmin(on){ ADMIN=on; document.body.classList.toggle('admin',on); $('#admBtn').textContent=on?'登出管理模式':'平安住登入';  }
 
+
+/* ---------- 封窗確認（線上簽署） ---------- */
+const SL={pad:null,apad:null};
+const LIB={pdf:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',pdfw:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'};
+const _ld={};
+function loadJs(src){ return _ld[src] ||= new Promise((ok,no)=>{ const t=document.createElement('script'); t.src=src; t.onload=ok; t.onerror=()=>{delete _ld[src]; no(new Error('元件載入失敗，請檢查網路'));}; document.head.appendChild(t); }); }
+const sealOK=()=>!!(D.seal&&D.sealClient&&D.sealClient.ver===D.seal.ver);
+const sealDone=()=>!!(sealOK()&&D.sealApprove&&D.sealApprove.ver===D.seal.ver&&D.sealApprove.clientSignedAt===D.sealClient.signedAt);
+
+function makePad(holder){
+  holder.innerHTML='<canvas></canvas><span class="hint2">請在框內簽名</span>';
+  const cv=holder.querySelector('canvas'), ctx=cv.getContext('2d'); let drawing=false, dirty=false, last=null;
+  function size(){ const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1; cv.width=r.width*dpr; cv.height=r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth=2.6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#111'; dirty=false; holder.querySelector('.hint2').style.display=''; }
+  requestAnimationFrame(size);
+  const pt=e=>{const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+  cv.addEventListener('pointerdown',e=>{drawing=true;last=pt(e);cv.setPointerCapture(e.pointerId);holder.querySelector('.hint2').style.display='none';});
+  cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;dirty=true;});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,()=>drawing=false));
+  return {clear:size,isEmpty:()=>!dirty,data:()=>{ const o=document.createElement('canvas'); const w=600,h=Math.round(600*cv.height/cv.width); o.width=w;o.height=h;
+    const c=o.getContext('2d'); c.fillStyle='#fff'; c.fillRect(0,0,w,h); c.drawImage(cv,0,0,w,h); return o.toDataURL('image/png'); }};
+}
+
+async function pdfPage1(file){
+  await loadJs(LIB.pdf); await loadJs(LIB.pdfw).catch(()=>{});
+  pdfjsLib.GlobalWorkerOptions.workerSrc=LIB.pdfw;
+  const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; const pg=await doc.getPage(1);
+  const v0=pg.getViewport({scale:1}); const v=pg.getViewport({scale:3200/Math.max(v0.width,v0.height)});
+  const c=document.createElement('canvas'); c.width=Math.round(v.width); c.height=Math.round(v.height);
+  const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:x,viewport:v}).promise; return c.toDataURL('image/png');
+}
+function parseItems(t){ return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split(/[\s　,，、]+/);return {floor:p[0]||'',face:p[1]||'',note:p.slice(2).join(' ')};}); }
+const itemsTxt=items=>(items||[]).map(it=>[it.floor,it.face,it.note].filter(Boolean).join(' ')).join('\n');
+
+$('#sealAdmForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target; const file=f.file.files[0]; const items=parseItems(f.items.value);
+  if(!file&&!D.seal) return alert('請選擇封窗確認圖（PDF 或圖片）');
+  if(!items.length) return alert('請至少列出一處封窗');
+  if(sealOK()&&!confirm('發布新版後，業主目前的簽署會失效，需依新版重新簽署。確定發布？')) return;
+  try{ let data=''; if(file){ busy(true,'處理圖面…'); data=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)?await pdfPage1(file):await shrink(file,3200); }
+    busy(true,'發布中…'); await apiPost({action:'sealPublish',title:f.title.value.trim(),items,data}); f.file.value=''; await load(); }
+  catch(err){ alert('發布失敗：'+err.message); } busy(false); };
+
+function renderSeal(){
+  const s=D.seal, c=D.sealClient, a=D.sealApprove;
+  $('#kSeal').textContent=!s?'尚未發布':sealDone()?'已核可':sealOK()?'業主已簽・待核可':'待業主簽署';
+  const fm=$('#sealAdmForm'); if(!(document.activeElement&&fm.contains(document.activeElement))){ fm.title.value=s?.title||'龍德路 外觀立面封窗確認書'; fm.items.value=itemsTxt(s?.items); }
+  $('#sealAdmInfo').textContent=s?`目前第 ${s.ver} 版・${fmtT(s.publishedAt)} 發布；不換圖可不選檔案`:'';
+  if(!s){ $('#sealView').innerHTML='<div class="empty">平安住尚未發布封窗確認圖</div>'; $('#sealSign').innerHTML=''; return; }
+  $('#sealView').innerHTML=`<a class="plan" href="${img(s.fileId,3200)}" target="_blank" rel="noopener"><img src="${img(s.fileId,1600)}" alt="封窗確認圖" style="background:#fff;border-radius:8px">
+    <div class="cap"><b>${esc(s.title)}</b><span class="muted small">第 ${s.ver} 版・點圖放大</span></div></a>`;
+  const box=$('#sealSign'), items=s.items||[];
+  if(sealOK()){
+    box.dataset.mode='';
+    box.innerHTML=`<div class="card"><h4 class="sh">業主確認</h4>
+        <div class="kv"><span>姓名</span><b>${esc(c.name)}</b><span>確認處數</span><b>${(c.checked||[]).length} / ${items.length} 處</b><span>簽署時間</span><b>${esc(fmtT(c.signedAt))}</b></div>
+        <div class="sigimg"><img src="${img(c.sigFileId,600)}" alt="業主簽名"></div><span class="stamp">已簽署</span>
+        ${ADMIN&&!sealDone()?'<div><button class="link" id="sealReset">撤銷業主簽署</button></div>':''}</div>
+      <div class="card" id="sealK">${sealDone()?`<h4 class="sh">施工單位核可</h4>
+        <div class="kv"><span>公司</span><b>平安住股份有限公司</b><span>承辦</span><b>${esc(a.rep)}</b><span>核可時間</span><b>${esc(fmtT(a.approvedAt))}</b></div>
+        <div class="sigimg"><img src="${img(a.sigFileId,600)}" alt="承辦簽名"></div><span class="stamp">已核可</span>
+        <a class="btn acc block" style="margin-top:12px" href="https://drive.google.com/file/d/${encodeURIComponent(a.pdfFileId)}/view" target="_blank" rel="noopener">開啟已簽署 PDF</a>
+        <p class="small muted" style="margin:6px 0 0">已同步存入「合約」頁的合約文件（變更簽認）。</p>
+        ${ADMIN?'<button class="link" id="sealUnap">撤銷核可</button>':''}`
+        : ADMIN ? '' : '<h4 class="sh">施工單位核可</h4><div class="sigimg muted small">待平安住核可</div>'}</div>`;
+    const r=$('#sealReset'); if(r) r.onclick=()=>act('sealReset',{},'撤銷業主簽署？撤銷後業主需重新簽名。');
+    const u=$('#sealUnap'); if(u) u.onclick=()=>act('sealUnapprove',{},'撤銷核可？已簽署 PDF 會一併從合約文件移除。');
+    if(!sealDone()&&ADMIN) renderApprove();
+    return;
+  }
+  if(box.dataset.mode==='form'&&box.dataset.ver==String(s.ver)) return;
+  box.dataset.mode='form'; box.dataset.ver=s.ver;
+  box.innerHTML=`<div class="card">
+    ${c&&c.ver!==s.ver?'<div class="note">封窗確認圖已更新為新版，請依新版重新確認並簽名。</div>':''}
+    <h4 class="sh">封窗明細｜請對照上圖逐項勾選</h4>
+    <div class="sealist">${items.map(it=>`<label class="sli"><input type="checkbox" class="sealck" value="${it.n}"><span class="no">${it.n}</span><span>${esc(it.floor)}・${esc(it.face)}${it.note?`<span class="muted small">　${esc(it.note)}</span>`:''}</span></label>`).join('')}</div>
+    <button type="button" class="btn ghost sm" id="sealAll" style="margin:10px 0 14px">全部勾選</button>
+    <form class="f" id="sealForm">
+      <label>業主姓名<input name="name" required autocomplete="name"></label>
+      <div class="pad" id="padS"></div>
+      <div><button type="button" class="btn ghost sm" id="clrS">清除簽名</button></div>
+      <label class="agree"><input type="checkbox" name="agree" required> 本人已確認上列封窗及保留窗位置，同意依本圖施工。</label>
+      <button class="btn acc block" type="submit" disabled>確認簽署</button>
+      <span class="small muted" id="sealMsg"></span>
+    </form></div>`;
+  SL.pad=makePad($('#padS')); $('#clrS').onclick=()=>SL.pad.clear();
+  const cks=()=>[...document.querySelectorAll('.sealck')];
+  const upd=()=>{ const n=cks().filter(x=>x.checked).length; $('#sealForm [type=submit]').disabled=n<items.length; $('#sealMsg').textContent=n<items.length?`已勾選 ${n} / ${items.length} 處，全部勾選後才能簽署`:''; };
+  cks().forEach(x=>x.onchange=upd); $('#sealAll').onclick=()=>{cks().forEach(x=>x.checked=true);upd();}; upd();
+  $('#sealForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target;
+    if(SL.pad.isEmpty()) return alert('請先簽名');
+    if(!f.agree.checked) return alert('請勾選同意聲明');
+    busy(true,'簽署中…');
+    try{ await apiPost({action:'sealSign',ver:s.ver,name:f.name.value.trim(),signature:SL.pad.data(),checked:cks().filter(x=>x.checked).map(x=>+x.value)}); box.dataset.mode=''; await load(); }
+    catch(err){ alert('簽署失敗：'+err.message); } busy(false); };
+}
+
+function renderApprove(){
+  const k=D.contractorSig, box=$('#sealK');
+  box.innerHTML=`<h4 class="sh">施工單位核可</h4>
+    <form class="f" id="apForm">
+      <label>承辦人<input name="rep" required value="${esc(k?.rep||'')}"></label>
+      ${k?`<div class="small muted">核可時自動帶入平安住承辦簽名：</div><div class="sigimg"><img src="${img(k.fileId,600)}" alt="承辦簽名"></div>
+           <div><button type="button" class="link" id="reSig">改用新簽名</button></div><div id="newSig"></div>`
+         :'<div class="small muted">第一次核可請簽名，之後核可會自動帶入：</div><div class="pad" id="padA"></div><div><button type="button" class="btn ghost sm" id="clrA">清除簽名</button></div>'}
+      <button class="btn block" type="submit">核可並產生已簽署 PDF</button>
+    </form>`;
+  SL.apad=null;
+  const mk=()=>{ SL.apad=makePad($('#padA')); $('#clrA').onclick=()=>SL.apad.clear(); };
+  if(!k) mk(); else $('#reSig').onclick=()=>{ $('#newSig').innerHTML='<div class="pad" id="padA"></div><div><button type="button" class="btn ghost sm" id="clrA">清除簽名</button></div>'; $('#reSig').remove(); mk(); };
+  $('#apForm').onsubmit=async e=>{ e.preventDefault(); const f=e.target;
+    if(SL.apad&&SL.apad.isEmpty()) return alert('請先簽名');
+    const rep=f.rep.value.trim(), approvedAt=new Date().toISOString(), sig=SL.apad?SL.apad.data():'';
+    try{ busy(true,'產生已簽署 PDF…');
+      const pdf=await makeSignedPdf({rep,approvedAt,sig:sig||null});
+      busy(true,'上傳中…'); await apiPost({action:'sealApprove',rep,approvedAt,clientSignedAt:D.sealClient.signedAt,signature:sig,pdf}); await load(); }
+    catch(err){ alert('核可失敗：'+err.message); } busy(false); };
+}
+
+async function fileUrl(id){ const r=await fetch(API+'?action=file&id='+encodeURIComponent(id)+'&pass='+encodeURIComponent(PASS),{cache:'no-store'}); const j=await r.json(); if(!j.ok) throw new Error(j.error); return j.data; }
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('圖片載入失敗'));i.src=src;});
+async function makeSignedPdf({rep,approvedAt,sig}){
+  const s=D.seal, c=D.sealClient;
+  const [base,cs,ks]=await Promise.all([fileUrl(s.fileId).then(loadImg),fileUrl(c.sigFileId).then(loadImg),(sig?Promise.resolve(sig):fileUrl(D.contractorSig.fileId)).then(loadImg)]);
+  const W=base.naturalWidth, k=W/1600, H0=base.naturalHeight, band=Math.round(250*k);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H0+band; const x=cv.getContext('2d');
+  x.fillStyle='#fff'; x.fillRect(0,0,cv.width,cv.height); x.drawImage(base,0,0);
+  const y0=H0, F=n=>`${Math.round(n*k)}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+  x.strokeStyle='#1E2833'; x.lineWidth=2*k; x.strokeRect(20*k,y0+5*k,W-40*k,band-25*k);
+  x.fillStyle='#1E2833'; x.font='bold '+F(22); x.fillText('線上簽署紀錄',40*k,y0+42*k); x.font=F(16);
+  [`圖面：${s.title}（第 ${s.ver} 版，${fmtT(s.publishedAt)} 發布）`,`業主確認封窗共 ${(c.checked||[]).length} / ${(s.items||[]).length} 處（編號 ${(c.checked||[]).join('、')}）`,
+   '聲明：本人已確認上列封窗及保留窗位置，同意依本圖施工。','工程：龍德路住宅整修工程・高雄市鼓山區龍德路106巷16-1號']
+   .forEach((t,i)=>x.fillText(t,40*k,y0+(76+i*28)*k));
+  const put=(im,label,line,left)=>{ const bw=330*k,bh=110*k,by=y0+56*k; x.font=F(15); x.fillText(label,left,y0+42*k);
+    x.strokeStyle='#999'; x.lineWidth=k; x.strokeRect(left,by,bw,bh); const sc=Math.min(bw/im.width,bh/im.height);
+    x.drawImage(im,left+(bw-im.width*sc)/2,by+(bh-im.height*sc)/2,im.width*sc,im.height*sc); x.fillText(line,left,by+bh+24*k); };
+  put(cs,'業主簽名',`${c.name}　${fmtT(c.signedAt)}`,W-760*k);
+  put(ks,'施工單位承辦（平安住股份有限公司）',`${rep}　${fmtT(approvedAt)}`,W-400*k);
+  await loadJs(LIB.jspdf); const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:cv.width>=cv.height?'l':'p',unit:'mm',format:'a3'});
+  const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight(), m=6, sc=Math.min((pw-2*m)/cv.width,(ph-2*m)/cv.height);
+  pdf.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',(pw-cv.width*sc)/2,(ph-cv.height*sc)/2,cv.width*sc,cv.height*sc);
+  return pdf.output('datauristring').replace(/^data:application\/pdf;[^,]*,/,'data:application/pdf;base64,');
+}
+
 /* ---------- init ---------- */
 const sel=(el,arr)=>el.innerHTML=arr.map(v=>`<option>${esc(v)}</option>`).join('');
 sel($('#beforeForm [name=floor]'),FLOORS);
@@ -1086,11 +1265,11 @@ $('#updForm [name=date]').value=today();
 
 async function load(){
   const j=await apiGet();
-  Object.assign(D,{fields:j.fields||{},docs:j.docs||[],status:{stages:{},checks:{},paid:{},...(j.status||{})},photos:j.photos||[],updates:j.updates||[]});
+  Object.assign(D,{seal:j.seal||null,sealClient:j.sealClient||null,sealApprove:j.sealApprove||null,contractorSig:j.contractorSig||null,fields:j.fields||{},docs:j.docs||[],status:{stages:{},checks:{},paid:{},...(j.status||{})},photos:j.photos||[],updates:j.updates||[]});
   if(PASS && !j.admin){ if(PASS===LS.get('ld_pass'))LS.set('ld_pass',''); PASS=''; setAdmin(false); } else if(j.admin && !ADMIN) setAdmin(true);
-  renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
+  renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates(); renderSeal();
 }
-renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates();
+renderFields(); renderDocs(); renderStages(); renderBefore(); renderPolicy(); renderUpdates(); renderSeal();
 if(!configured()){ const n=$('#sysNote'); n.style.display='block'; n.textContent='尚未設定後端網址：目前可閱讀合約與平面圖，簽署及進度功能需完成 Apps Script 部署。'; }
 else { busy(true,'讀取中…'); load().catch(err=>{ const n=$('#sysNote'); n.style.display='block'; n.textContent='資料讀取失敗：'+err.message; }).finally(()=>busy(false)); }
 </script>
