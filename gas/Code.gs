@@ -22,9 +22,11 @@
  *   可選：BOOK_AMOUNTS  各期金額，以逗號分隔（記帳系統未建立付款期程時才會用到）
  *   未設定 BOOK_URL 時完全不影響原本功能。
  *
- * ── 封窗確認線上簽署（2026-11-17 新增）──
- *   kv：seal（圖面與明細）、sealClient（業主簽署）、sealApprove（平安住核可）、contractorSig（承辦簽名，核可時自動帶入）
- *   業主免登入即可簽署（需勾選全部封窗）；核可時產生「已簽署 PDF」存入雲端硬碟，並自動加入合約文件（類型：變更簽認）。
+ * ── 規格及追加工程確認書（線上簽署，2026-11-17 新增）──
+ *   kv：confirms（所有確認書：圖面頁、確認項目、業主簽署、平安住核可）、contractorSig（承辦簽名，核可時自動帶入）
+ *   可建立多份（封窗、規格確認、追加工程…）；業主免登入勾選全部項目後簽名；
+ *   核可時產生「已簽署 PDF」存入雲端硬碟，並自動加入合約文件（追加工程→追加合約，其餘→變更簽認）。
+ *   舊版 kv：seal／sealClient／sealApprove 會自動轉入 confirms。
  *   更新後請「管理部署作業 → 編輯 → 版本：新版本 → 部署」，網址不變。
  */
 
@@ -125,7 +127,7 @@ function doGet(e) {
       return out_({ ok: true, data: 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()) });
     }
     return out_({
-      seal: kvGet_('seal'), sealClient: kvGet_('sealClient'), sealApprove: kvGet_('sealApprove'),
+      confirms: confs_(true),
       contractorSig: isAdmin ? kvGet_('contractorSig') : null,
       ok: true,
       fields: kvGet_('fields') || {},
@@ -239,52 +241,71 @@ function doPost(e) {
         if (b.caption != null) sheet_('photos').getRange(r, 4).setValue(b.caption);
         break;
       }
-      /* ---------- 封窗確認 ---------- */
-      case 'sealPublish': {
+      /* ---------- 規格及追加工程確認書 ---------- */
+      case 'confPublish': { // 新增或發布新版
         needAdmin();
-        const old = kvGet_('seal') || {};
-        const items = (b.items || []).map((it, i) => ({ n: i + 1, floor: String(it.floor || ''), face: String(it.face || ''), note: String(it.note || '') }));
-        if (!items.length) throw new Error('請至少列出一處封窗');
-        const fileId = b.data ? saveImage_(b.data, '封窗確認圖_v' + ((old.ver || 0) + 1) + '.png') : old.fileId;
-        if (!fileId) throw new Error('請上傳封窗確認圖');
-        const seal = { ver: (old.ver || 0) + 1, fileId: fileId, title: b.title || '龍德路 外觀立面封窗確認書', items: items, publishedAt: now_() };
-        kvSet_('seal', seal); res.seal = seal; log_('sealPublish', 'v' + seal.ver + ' ' + items.length + '處'); break;
+        const list = confs_(); let c = b.id ? list.find(x => x.id === b.id) : null;
+        if (b.id && !c) throw new Error('找不到這份確認書');
+        const items = (b.items || []).map(t => String(t || '').trim()).filter(Boolean).map((t, i) => ({ n: i + 1, text: t.slice(0, 300) }));
+        if (!items.length) throw new Error('請至少列出一個確認項目');
+        const title = String(b.title || '').trim(); if (!title) throw new Error('請填寫標題');
+        if (!c) { c = { id: uid_(), ver: 0, pages: [], client: null, approve: null, createdAt: now_() }; list.push(c); }
+        const ver = c.ver + 1;
+        let pages = c.pages || [];
+        if (b.pages && b.pages.length) {
+          pages = b.pages.map((d, i) => saveImage_(d, title + '_v' + ver + '_p' + (i + 1) + '.jpg'));
+          (c.pages || []).forEach(id => { if (!c.client && !c.approve) trash_(id); }); // 未簽過的舊圖直接清掉
+        }
+        if (!pages.length) throw new Error('請上傳圖面或附件（PDF 或圖片）');
+        const signed = c.client && c.client.ver === c.ver;
+        if (c.approve) unapprove_(c);
+        Object.assign(c, { ver: ver, type: b.type || '規格確認', title: title.slice(0, 80), amount: String(b.amount || '').trim().slice(0, 40),
+          statement: String(b.statement || '').trim().slice(0, 300), items: items, pages: pages, publishedAt: now_() });
+        if (signed) c.client = Object.assign({}, c.client, { stale: true });
+        saveConfs_(list); res.id = c.id; log_('confPublish', c.title + ' v' + ver); break;
       }
-      case 'sealSign': { // 業主：免登入
-        const seal = kvGet_('seal'); if (!seal) throw new Error('尚未發布封窗確認圖');
-        if (Number(b.ver) !== seal.ver) throw new Error('圖面已更新，請重新整理頁面後再簽署');
-        const cur = kvGet_('sealClient'); if (cur && cur.ver === seal.ver) throw new Error('此版圖面已完成簽署');
+      case 'confDelete': {
+        needAdmin(); const list = confs_(); const i = list.findIndex(x => x.id === b.id); if (i < 0) break;
+        const c = list[i]; if (c.approve) throw new Error('已核可的確認書請先撤銷核可再刪除');
+        list.splice(i, 1); saveConfs_(list); log_('confDelete', c.title); break;
+      }
+      case 'confSign': { // 業主：免登入
+        const list = confs_(); const c = list.find(x => x.id === b.id); if (!c) throw new Error('找不到這份確認書');
+        if (Number(b.ver) !== c.ver) throw new Error('確認書已更新，請重新整理頁面後再簽署');
+        if (c.client && c.client.ver === c.ver && !c.client.stale) throw new Error('此版已完成簽署');
         const name = String(b.name || '').trim(); if (!name) throw new Error('請填寫姓名');
         const checked = (b.checked || []).map(Number);
-        if (!seal.items.every(it => checked.indexOf(it.n) >= 0)) throw new Error('請勾選全部封窗位置');
+        if (!c.items.every(it => checked.indexOf(it.n) >= 0)) throw new Error('請勾選全部確認項目');
         if (!/^data:image\/png;base64,/.test(String(b.signature || ''))) throw new Error('簽名格式錯誤');
-        const sigFileId = saveImage_(b.signature, '封窗確認_業主簽名_v' + seal.ver + '_' + uid_() + '.png');
-        const c = { name: name.slice(0, 40), sigFileId: sigFileId, signedAt: now_(), ver: seal.ver, checked: checked };
-        unapprove_(); kvSet_('sealClient', c); res.sealClient = c; log_('sealSign', name + ' v' + seal.ver); break;
+        if (c.approve) unapprove_(c);
+        c.client = { name: name.slice(0, 40), sigFileId: saveImage_(b.signature, c.title + '_業主簽名_v' + c.ver + '_' + uid_() + '.png'), signedAt: now_(), ver: c.ver, checked: checked };
+        saveConfs_(list); log_('confSign', c.title + ' ' + name + ' v' + c.ver); break;
       }
-      case 'sealReset': {
-        needAdmin(); unapprove_(); kvDel_('sealClient'); log_('sealReset', ''); break;
+      case 'confReset': {
+        needAdmin(); const list = confs_(); const c = list.find(x => x.id === b.id); if (!c) break;
+        if (c.approve) unapprove_(c); c.client = null; saveConfs_(list); log_('confReset', c.title); break;
       }
-      case 'sealApprove': {
+      case 'confApprove': {
         needAdmin();
-        const seal = kvGet_('seal'), c = kvGet_('sealClient');
-        if (!seal || !c || c.ver !== seal.ver) throw new Error('業主尚未依目前版本簽署');
-        if (b.clientSignedAt !== c.signedAt) throw new Error('業主簽署資料已變動，請重新整理');
+        const list = confs_(); const c = list.find(x => x.id === b.id); if (!c) throw new Error('找不到這份確認書');
+        if (!c.client || c.client.ver !== c.ver || c.client.stale) throw new Error('業主尚未依目前版本簽署');
+        if (b.clientSignedAt !== c.client.signedAt) throw new Error('業主簽署資料已變動，請重新整理');
         let k = kvGet_('contractorSig');
         if (b.signature) { k = { fileId: saveImage_(b.signature, '平安住承辦簽名_' + uid_() + '.png'), rep: b.rep || '' }; kvSet_('contractorSig', k); }
         if (!k) throw new Error('請先簽名');
         if (b.rep && b.rep !== k.rep) { k.rep = b.rep; kvSet_('contractorSig', k); }
-        unapprove_();
-        const name = '龍德路_封窗確認書_已簽署_第' + seal.ver + '版.pdf';
+        if (c.approve) unapprove_(c);
+        const name = c.title + '_已簽署_第' + c.ver + '版.pdf';
         const pdfFileId = saveImage_(b.pdf, name);
         const docId = uid_(); const day = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
-        sheet_('docs').appendRow([docId, '變更簽認', '外觀立面封窗確認書（第' + seal.ver + '版・已簽署）', '', JSON.stringify([{ id: pdfFileId, mime: 'application/pdf', name: name }]), now_()]);
+        sheet_('docs').appendRow([docId, c.type === '追加工程' ? '追加合約' : '變更簽認', c.title + '（第' + c.ver + '版・已簽署）', '', JSON.stringify([{ id: pdfFileId, mime: 'application/pdf', name: name }]), now_()]);
         setText_('docs', findRow_('docs', docId), 4, day);
-        const a = { rep: k.rep, sigFileId: k.fileId, approvedAt: b.approvedAt || now_(), ver: seal.ver, clientSignedAt: c.signedAt, pdfFileId: pdfFileId, docId: docId };
-        kvSet_('sealApprove', a); res.sealApprove = a; log_('sealApprove', k.rep + ' v' + seal.ver); break;
+        c.approve = { rep: k.rep, sigFileId: k.fileId, approvedAt: b.approvedAt || now_(), ver: c.ver, clientSignedAt: c.client.signedAt, pdfFileId: pdfFileId, docId: docId };
+        saveConfs_(list); log_('confApprove', c.title + ' ' + k.rep + ' v' + c.ver); break;
       }
-      case 'sealUnapprove': {
-        needAdmin(); unapprove_(); log_('sealUnapprove', ''); break;
+      case 'confUnapprove': {
+        needAdmin(); const list = confs_(); const c = list.find(x => x.id === b.id); if (!c) break;
+        unapprove_(c); saveConfs_(list); log_('confUnapprove', c.title); break;
       }
       default:
         throw new Error('未知的操作');
@@ -298,11 +319,24 @@ function doPost(e) {
 }
 
 
-function unapprove_() {
-  const a = kvGet_('sealApprove'); if (!a) return;
+function unapprove_(c) { // c：確認書物件（會直接修改，呼叫端負責存檔）
+  const a = c.approve; if (!a) return;
   if (a.docId) { const r = findRow_('docs', a.docId); if (r > 0) sheet_('docs').deleteRow(r); }
   if (a.pdfFileId) trash_(a.pdfFileId);
-  kvDel_('sealApprove');
+  c.approve = null;
+}
+function saveConfs_(list) { kvSet_('confirms', list); }
+function confs_(needLock) { // doPost 已持有鎖；doGet 轉換舊資料時另外取鎖
+  const list = kvGet_('confirms'); if (list) return list;
+  const s = kvGet_('seal'); if (!s) return [];
+  // 舊版封窗確認書轉入
+  const c = { id: 'seal', ver: s.ver, type: '規格確認', title: s.title || '外觀立面封窗確認書', amount: '', statement: '本人已確認上列封窗及保留窗位置，同意依本圖施工。',
+    items: (s.items || []).map(it => ({ n: it.n, text: [it.floor, it.face, it.note].filter(Boolean).join(' ') })),
+    pages: [s.fileId], publishedAt: s.publishedAt, createdAt: s.publishedAt, client: kvGet_('sealClient'), approve: kvGet_('sealApprove') };
+  const migrate = () => { if (!kvGet_('confirms')) { kvSet_('confirms', [c]); kvDel_('seal'); kvDel_('sealClient'); kvDel_('sealApprove'); } };
+  if (!needLock) migrate();
+  else { const lock = LockService.getScriptLock(); if (lock.tryLock(5000)) { try { migrate(); } finally { lock.releaseLock(); } } }
+  return [c];
 }
 
 /* ---------- 記帳系統連動：收款狀態 ---------- */
